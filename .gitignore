@@ -7,6 +7,7 @@ node_modules/
 data/state.json
 data/outbox/
 data/uploads/
+secrets/
 *.log
 dist/
 coverage/

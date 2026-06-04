@@ -302,22 +302,30 @@ async function sendMail(message) {
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
   if (nodemailer && smtpHost && smtpUser && smtpPass) {
-    const transport = nodemailer.createTransport({
-      host: smtpHost,
-      port: Number(process.env.SMTP_PORT || 465),
-      secure: String(process.env.SMTP_SECURE || "true") === "true",
-      auth: { user: smtpUser, pass: smtpPass }
-    });
-    await transport.sendMail({
-      from: process.env.MAIL_FROM || `"XPAY Gateway" <${smtpUser}>`,
-      ...message
-    });
-    return { mode: "smtp", delivered: true };
+    try {
+      const transport = nodemailer.createTransport({
+        host: smtpHost,
+        port: Number(process.env.SMTP_PORT || 465),
+        secure: String(process.env.SMTP_SECURE || "true") === "true",
+        auth: { user: smtpUser, pass: smtpPass }
+      });
+      await transport.sendMail({
+        from: process.env.MAIL_FROM || `"XPAY Gateway" <${smtpUser}>`,
+        ...message
+      });
+      return { mode: "smtp", delivered: true };
+    } catch (error) {
+      return writeOutboxMail(message, "outbox-fallback", error.message);
+    }
   }
+  return writeOutboxMail(message, "outbox");
+}
+
+function writeOutboxMail(message, mode, smtpError = "") {
   fs.mkdirSync(OUTBOX_DIR, { recursive: true });
   const file = path.join(OUTBOX_DIR, `${Date.now()}-${crypto.randomBytes(3).toString("hex")}.json`);
-  fs.writeFileSync(file, `${JSON.stringify({ ...message, createdAt: nowIso() }, null, 2)}\n`);
-  return { mode: "outbox", delivered: false, file: path.relative(ROOT, file) };
+  fs.writeFileSync(file, `${JSON.stringify({ ...message, smtpError, createdAt: nowIso() }, null, 2)}\n`);
+  return { mode, delivered: false, file: path.relative(ROOT, file), smtpError: smtpError ? "SMTP delivery failed; saved to outbox." : "" };
 }
 
 function escapeHtml(value) {
