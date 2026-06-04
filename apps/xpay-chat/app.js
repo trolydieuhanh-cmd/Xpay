@@ -409,7 +409,7 @@ const translations = {
     authForgotStatus: "Nhập số điện thoại, email nhận OTP và mật khẩu mới để lấy lại quyền đăng nhập XPAY Chat.",
     otpEmailNotice: "OTP email sẽ được gửi duy nhất từ Email: admin@gatewayxpay.com",
     privacyPolicy: "Chính sách quyền riêng tư",
-    heroLead: "Trò chuyện, gọi video, nhật ký và kết nối quanh đây trong một trải nghiệm số được thiết kế cho thời đại AI.",
+    heroLead: "Trò chuyện, gọi video, nhật ký và kết nối khách hàng trong một không gian bảo mật do Công Ty TNHH TM DV PHẦN MỀM XPAY quản lý.",
     otpSecurity: "Bảo mật OTP",
     nearbySearch: "Tìm quanh đây",
     activeNow: "Đang hoạt động",

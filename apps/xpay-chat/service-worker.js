@@ -1,4 +1,4 @@
-const CACHE_NAME = "xpaychat-20260601-appstore-compliance";
+const CACHE_NAME = "xpaychat-20260604-ui-refresh";
 const APP_SHELL = [
   "./",
   "./index.html",
