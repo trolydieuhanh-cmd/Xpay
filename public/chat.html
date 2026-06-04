@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XPAY Chat</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="chat-body">
+  <main class="chat-shell">
+    <section class="chat-login">
+      <img class="chat-logo" src="/assets/xpay-logo.svg" alt="XPAY Chat">
+      <h1>XPAY Chat</h1>
+      <p>Đăng nhập bằng email hoặc số điện thoại đã được admin kích hoạt. Tài khoản lần đầu sẽ phải đổi mật khẩu trước khi sử dụng.</p>
+      <form id="chatLoginForm">
+        <label>Email hoặc số điện thoại
+          <input name="emailOrPhone" required autocomplete="username" placeholder="email hoặc số điện thoại">
+        </label>
+        <label>Mật khẩu
+          <input name="password" type="password" required autocomplete="current-password">
+        </label>
+        <button class="primary-btn full" type="submit">Đăng nhập</button>
+        <p class="form-status" id="chatStatus"></p>
+      </form>
+      <form class="change-password-panel" id="changePasswordForm" hidden>
+        <h2>Đổi mật khẩu lần đầu</h2>
+        <label>Mật khẩu hiện tại
+          <input name="currentPassword" type="password" required>
+        </label>
+        <label>Mật khẩu mới
+          <input name="newPassword" type="password" minlength="10" required>
+        </label>
+        <button class="primary-btn full" type="submit">Cập nhật mật khẩu</button>
+      </form>
+    </section>
+
+    <section class="chat-preview" id="chatPreview">
+      <div class="phone-frame">
+        <div class="phone-top">
+          <strong>XPAY Chat</strong>
+          <span id="licenseState">Chưa đăng nhập</span>
+        </div>
+        <div class="message-list">
+          <article class="message other">Chào mừng đến XPAY Chat. License được đồng bộ từ gatewayxpay.com.</article>
+          <article class="message mine">Sau khi admin kích hoạt, tài khoản dùng đúng thời hạn đã mua.</article>
+          <article class="message other">Hệ thống sẽ yêu cầu đổi mật khẩu lần đầu để bảo mật.</article>
+        </div>
+        <div class="chat-input-bar">
+          <span>Nhắn tin...</span>
+          <button aria-label="Gửi"><svg viewBox="0 0 24 24"><path d="m4 12 16-8-6 16-3-7-7-1Z"/></svg></button>
+        </div>
+      </div>
+      <aside class="license-panel" id="licensePanel">
+        <h2>Thông tin license</h2>
+        <p>Đăng nhập để xem trạng thái gói, ngày kích hoạt và ngày hết hạn.</p>
+      </aside>
+    </section>
+  </main>
+  <script src="/chat.js"></script>
+</body>
+</html>

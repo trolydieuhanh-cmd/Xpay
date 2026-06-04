@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XPAY Admin</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="admin-body">
+  <main class="admin-shell">
+    <aside class="admin-sidebar">
+      <a class="brand admin-brand" href="/">
+        <img src="/assets/xpay-logo.svg" alt="XPAY">
+      </a>
+      <nav class="admin-nav">
+        <a href="#overview">Tổng quan</a>
+        <a href="#orders">Giao dịch</a>
+        <a href="#customers">Khách hàng</a>
+        <a href="#plans">Gói dịch vụ</a>
+      </nav>
+      <a class="secondary-btn full" href="/">Về website</a>
+    </aside>
+
+    <section class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1>XPAY Admin Console</h1>
+          <p>Quản lý giao dịch, license, khách hàng online và xuất Excel.</p>
+        </div>
+        <div class="admin-actions">
+          <button class="icon-button" id="refreshBtn" title="Làm mới" aria-label="Làm mới">
+            <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6"/></svg>
+          </button>
+          <a class="primary-btn" href="/api/admin/export.xls">Xuất Excel</a>
+        </div>
+      </div>
+
+      <form class="login-panel" id="adminLogin">
+        <h2>Đăng nhập Admin</h2>
+        <p>Nhập mật khẩu admin từ file môi trường `.env.local`.</p>
+        <label>Email admin
+          <input name="email" value="admin@gatewayxpay.com" autocomplete="username">
+        </label>
+        <label>Mật khẩu
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary-btn full" type="submit">Đăng nhập</button>
+        <p class="form-status" id="adminLoginStatus"></p>
+      </form>
+
+      <div class="admin-content" id="adminContent" hidden>
+        <section class="stats-grid" id="overview">
+          <article><span>Chờ thanh toán</span><strong id="statPending">0</strong></article>
+          <article><span>Đã thanh toán</span><strong id="statPaid">0</strong></article>
+          <article><span>Khách active</span><strong id="statActive">0</strong></article>
+          <article><span>Đang online</span><strong id="statOnline">0</strong></article>
+          <article><span>Doanh thu xác nhận</span><strong id="statRevenue">0đ</strong></article>
+        </section>
+
+        <section class="admin-section" id="orders">
+          <div class="section-title-row">
+            <div>
+              <h2>Giao dịch và QR</h2>
+              <p>Đánh dấu đã thanh toán, kích hoạt license và gửi mật khẩu lần đầu qua email.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã</th>
+                  <th>Khách hàng</th>
+                  <th>Gói</th>
+                  <th>Số tiền</th>
+                  <th>Trạng thái</th>
+                  <th>QR</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-section" id="customers">
+          <div class="section-title-row">
+            <div>
+              <h2>Khách hàng và thời hạn</h2>
+              <p>Theo dõi trạng thái, ngày hết hạn, online gần nhất, tạm dừng hoặc gia hạn dịch vụ.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Khách hàng</th>
+                  <th>Liên hệ</th>
+                  <th>Sản phẩm</th>
+                  <th>License</th>
+                  <th>Online</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="customersTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-section" id="plans">
+          <div class="section-title-row">
+            <div>
+              <h2>Định giá gói dịch vụ</h2>
+              <p>Admin điền giá cụ thể; website và QR sẽ dùng giá mới ngay.</p>
+            </div>
+          </div>
+          <div class="plan-editor-grid" id="planEditor"></div>
+        </section>
+
+        <section class="admin-section">
+          <div class="section-title-row">
+            <div>
+              <h2>Khách đang online</h2>
+              <p>Dữ liệu cập nhật khi khách đăng nhập phần mềm XPAY Chat.</p>
+            </div>
+          </div>
+          <div class="online-list" id="onlineList"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script src="/admin.js"></script>
+</body>
+</html>

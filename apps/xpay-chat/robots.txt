@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin.html
+Disallow: /admin
+Disallow: /data/
+Disallow: /backups/
+Disallow: /deploy/
+Disallow: /scripts/
+Disallow: /load-tests/

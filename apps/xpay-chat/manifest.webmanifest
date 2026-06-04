@@ -1,0 +1,34 @@
+{
+  "name": "XPAY Chat by Công Ty TNHH TM DV PHẦN MỀM XPAY",
+  "short_name": "XPAY Chat",
+  "description": "Ứng dụng chat mạng xã hội song ngữ, đăng nhập bằng số điện thoại, tìm bạn quanh đây, gọi thoại/video và trợ lý XPAY AI.",
+  "id": "/",
+  "lang": "vi",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["social", "communication", "productivity"],
+  "background_color": "#f7fbff",
+  "theme_color": "#101828",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

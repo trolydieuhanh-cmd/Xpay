@@ -1,0 +1,87 @@
+{
+  "settings": {
+    "company": "Công Ty TNHH TM DV PHẦN MỀM XPAY",
+    "domain": "gatewayxpay.com",
+    "supportEmail": "admin@gatewayxpay.com",
+    "bank": {
+      "accountNumber": "52309999",
+      "accountName": "Công Ty TNHH TM DV PHẦN MỀM XPAY",
+      "bankCode": "TCB",
+      "bankName": "Techcombank",
+      "bankFullName": "Ngân hàng TMCP Kỹ Thương Việt Nam"
+    }
+  },
+  "products": [
+    {
+      "id": "xpay-chat",
+      "name": "XPAY Chat",
+      "category": "Phần mềm chat mạng xã hội",
+      "summary": "Nền tảng chat, gọi thoại/video, nhật ký, hồ sơ doanh nghiệp và trợ lý AI cho tổ chức.",
+      "status": "first-product",
+      "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=82"
+    },
+    {
+      "id": "enterprise-suite",
+      "name": "XPAY Enterprise Suite",
+      "category": "Giải pháp doanh nghiệp",
+      "summary": "Quản trị vận hành, khách hàng, đơn hàng, báo cáo và phân quyền theo quy trình doanh nghiệp.",
+      "status": "ready",
+      "image": "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1200&q=82"
+    },
+    {
+      "id": "automation-core",
+      "name": "XPAY Automation Core",
+      "category": "Hệ thống tự động",
+      "summary": "Tự động hóa tác vụ, duyệt luồng, gửi thông báo, tạo báo cáo và giám sát trạng thái hệ thống.",
+      "status": "ready",
+      "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=82"
+    },
+    {
+      "id": "ai-ops",
+      "name": "XPAY AI Ops",
+      "category": "Phần mềm AI",
+      "summary": "Trợ lý AI, phân tích dữ liệu, nhận diện ngữ cảnh và đề xuất hành động cho đội ngũ vận hành.",
+      "status": "ready",
+      "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=82"
+    }
+  ],
+  "plans": [
+    {
+      "id": "p30",
+      "name": "30 ngày",
+      "durationDays": 30,
+      "price": 390000,
+      "highlight": "Khởi động nhanh",
+      "features": ["Kích hoạt 1 tài khoản", "Hỗ trợ email", "Gia hạn tự động qua admin"]
+    },
+    {
+      "id": "p60",
+      "name": "60 ngày",
+      "durationDays": 60,
+      "price": 690000,
+      "highlight": "Tiết kiệm hơn",
+      "features": ["Kích hoạt 1 tài khoản", "Ưu tiên xử lý giao dịch", "Báo trước ngày hết hạn"]
+    },
+    {
+      "id": "p90",
+      "name": "90 ngày",
+      "durationDays": 90,
+      "price": 990000,
+      "highlight": "Dành cho đội vận hành",
+      "features": ["Kích hoạt 1 tài khoản", "Theo dõi online", "Hỗ trợ quy trình triển khai"]
+    },
+    {
+      "id": "lifetime",
+      "name": "Vĩnh viễn",
+      "durationDays": null,
+      "price": 5900000,
+      "highlight": "Sở hữu dài hạn",
+      "features": ["Không giới hạn thời hạn", "Ưu tiên nâng cấp", "Hồ sơ license riêng"]
+    }
+  ],
+  "orders": [],
+  "customers": [],
+  "sessions": [],
+  "adminSessions": [],
+  "audit": []
+}

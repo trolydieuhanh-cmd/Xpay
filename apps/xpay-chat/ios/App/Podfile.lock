@@ -1,0 +1,35 @@
+PODS:
+  - Capacitor (7.6.5):
+    - CapacitorCordova
+  - CapacitorCordova (7.6.5)
+  - CapacitorPushNotifications (7.0.6):
+    - Capacitor
+  - GoogleWebRTC (1.1.32000)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorPushNotifications (from `../../node_modules/@capacitor/push-notifications`)"
+  - GoogleWebRTC (~> 1.1)
+
+SPEC REPOS:
+  trunk:
+    - GoogleWebRTC
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorPushNotifications:
+    :path: "../../node_modules/@capacitor/push-notifications"
+
+SPEC CHECKSUMS:
+  Capacitor: fa6393e8023cd0f4740c9a22bc73720c049fffa2
+  CapacitorCordova: 2b36392a7292c3c451dcae154185ee8804d7b6b3
+  CapacitorPushNotifications: c6158ba6f3777f281a675aa43e4011e9723e822b
+  GoogleWebRTC: 4d261187b30512efdb711d21fa961a6adf138717
+
+PODFILE CHECKSUM: 467b1a1511f84d475a573645f0c2af8bd1572de4
+
+COCOAPODS: 1.12.1

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gateway XPAY - Software Gateway</title>
+  <meta name="description" content="Gateway XPAY cung cấp phần mềm doanh nghiệp, chat mạng xã hội, hệ thống tự động, AI và thanh toán QR cho khách hàng.">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Gateway XPAY">
+      <img src="/assets/xpay-logo.svg" alt="XPAY Software Gateway">
+    </a>
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <a href="#products">Sản phẩm</a>
+      <a href="#pricing">Gói dịch vụ</a>
+      <a href="#payment">Thanh toán QR</a>
+      <a href="/admin">Admin</a>
+    </nav>
+    <a class="nav-action" href="#pricing">Chọn gói</a>
+  </header>
+
+  <main>
+    <section class="hero-section">
+      <div class="hero-copy">
+        <h1>XPAY Software Gateway</h1>
+        <p class="hero-lead">Cổng phần mềm và thanh toán cho doanh nghiệp cần triển khai nhanh: chat mạng xã hội, vận hành tự động, AI, quản trị khách hàng và kích hoạt license theo thời gian thực.</p>
+        <div class="hero-actions">
+          <a class="primary-btn" href="#pricing">Mua phần mềm</a>
+          <a class="secondary-btn" href="/chat">Đăng nhập XPAY Chat</a>
+        </div>
+        <dl class="hero-proof" aria-label="Thông tin vận hành">
+          <div><dt>4</dt><dd>nhóm phần mềm</dd></div>
+          <div><dt>QR</dt><dd>Techcombank</dd></div>
+          <div><dt>Live</dt><dd>Admin kích hoạt</dd></div>
+        </dl>
+      </div>
+      <div class="hero-visual" aria-label="Màn hình vận hành Gateway XPAY">
+        <div class="product-console">
+          <div class="console-top">
+            <span></span><span></span><span></span>
+            <strong>Gateway Control</strong>
+          </div>
+          <div class="console-grid">
+            <div class="console-panel wide">
+              <div class="panel-title">
+                <span class="icon-box icon-cyan"><svg viewBox="0 0 24 24"><path d="M4 7h16M6 7v12h12V7M9 11h6M9 15h4"/></svg></span>
+                <span>License Flow</span>
+              </div>
+              <div class="flow-line"><b></b><b></b><b></b><b></b></div>
+              <p>Khách chọn gói, quét QR, admin xác nhận và tài khoản được kích hoạt bằng email.</p>
+            </div>
+            <div class="console-panel">
+              <div class="mini-metric"><span>Online</span><strong id="heroOnline">0</strong></div>
+            </div>
+            <div class="console-panel">
+              <div class="mini-metric"><span>Revenue</span><strong id="heroRevenue">0đ</strong></div>
+            </div>
+            <div class="console-panel wide payment-preview">
+              <img id="heroQr" alt="Mã QR thanh toán mẫu">
+              <div>
+                <strong>52309999</strong>
+                <span>Techcombank</span>
+                <small>Công Ty TNHH TM DV PHẦN MỀM XPAY</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-band" id="products">
+      <div class="section-heading">
+        <h2>Phần mềm XPAY cung cấp</h2>
+        <p>Danh mục sản phẩm được thiết kế cho doanh nghiệp muốn có nền tảng số riêng, kiểm soát được khách hàng, dữ liệu và thời gian sử dụng dịch vụ.</p>
+      </div>
+      <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <section class="split-section">
+      <div class="image-stage">
+        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=84" alt="Bảng điều hành phần mềm doanh nghiệp">
+      </div>
+      <div class="split-copy">
+        <h2>Luồng bán phần mềm khép kín</h2>
+        <p>Từ website đến phần mềm, dữ liệu gói dịch vụ đi qua cùng một API. Khi admin xác nhận giao dịch, khách hàng nhận email tự động, đăng nhập bằng email hoặc số điện thoại, đổi mật khẩu lần đầu và dùng phần mềm theo đúng thời hạn đã mua.</p>
+        <ul class="check-list">
+          <li>Admin nhập giá cho từng gói 30, 60, 90 ngày hoặc vĩnh viễn.</li>
+          <li>QR sinh theo giao dịch, đúng số tiền và nội dung chuyển khoản.</li>
+          <li>License có thể kích hoạt, gia hạn, tạm dừng hoặc tiếp tục.</li>
+          <li>Xuất danh sách khách hàng ra Excel để đối soát.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section-band pricing-band" id="pricing">
+      <div class="section-heading">
+        <h2>Gói dịch vụ phần mềm</h2>
+        <p>Giá dưới đây là dữ liệu admin có thể thay đổi trực tiếp trong bảng quản trị. Khách chọn gói, điền email và số điện thoại để nhận license sau khi thanh toán.</p>
+      </div>
+      <div class="pricing-grid" id="pricingGrid"></div>
+    </section>
+
+    <section class="payment-section" id="payment">
+      <div class="payment-copy">
+        <h2>Thanh toán QR tự động</h2>
+        <p>Mỗi đơn đăng ký tạo một mã giao dịch riêng. QR chuyển về tài khoản Techcombank của Công Ty TNHH TM DV PHẦN MỀM XPAY, kèm đúng số tiền và nội dung chuyển khoản để admin đối soát.</p>
+        <div class="bank-box">
+          <span>Tài khoản</span>
+          <strong>52309999</strong>
+          <span>Chủ sở hữu</span>
+          <strong>Công Ty TNHH TM DV PHẦN MỀM XPAY</strong>
+          <span>Ngân hàng</span>
+          <strong>Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam</strong>
+        </div>
+      </div>
+      <form class="order-form" id="orderForm">
+        <h3>Đăng ký gói dịch vụ</h3>
+        <label>Phần mềm
+          <select name="productId" id="productSelect"></select>
+        </label>
+        <label>Gói sử dụng
+          <select name="planId" id="planSelect"></select>
+        </label>
+        <label>Họ tên khách hàng
+          <input name="name" required autocomplete="name" placeholder="Nguyễn Văn A">
+        </label>
+        <label>Email nhận tài khoản
+          <input name="email" required type="email" autocomplete="email" placeholder="khachhang@example.com">
+        </label>
+        <label>Số điện thoại đồng bộ
+          <input name="phone" required inputmode="tel" autocomplete="tel" placeholder="0900000000">
+        </label>
+        <button class="primary-btn full" type="submit">Tạo mã QR thanh toán</button>
+        <p class="form-status" id="orderStatus"></p>
+      </form>
+      <aside class="qr-result" id="qrResult" hidden>
+        <h3>Mã QR giao dịch</h3>
+        <img id="orderQr" alt="QR thanh toán XPAY">
+        <dl>
+          <div><dt>Mã giao dịch</dt><dd id="orderId"></dd></div>
+          <div><dt>Số tiền</dt><dd id="orderAmount"></dd></div>
+          <div><dt>Nội dung</dt><dd id="orderContent"></dd></div>
+        </dl>
+        <p>Sau khi chuyển khoản, admin xác nhận và kích hoạt gói dịch vụ cho email + số điện thoại đã đăng ký.</p>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <img src="/assets/xpay-logo.svg" alt="XPAY">
+    <p>Gateway XPAY - Công Ty TNHH TM DV PHẦN MỀM XPAY</p>
+    <a href="mailto:admin@gatewayxpay.com">admin@gatewayxpay.com</a>
+  </footer>
+
+  <script src="/site.js"></script>
+</body>
+</html>

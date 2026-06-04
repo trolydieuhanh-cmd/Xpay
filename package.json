@@ -1,0 +1,16 @@
+{
+  "name": "gatewayxpay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gateway XPAY company website, QR payment portal, admin console, and XPAY Chat license gateway.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js",
+    "check": "node --check server.js",
+    "export:sample": "node scripts/export-sample.js"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.10"
+  }
+}

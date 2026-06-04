@@ -1,0 +1,25 @@
+{
+  "appId": "com.gatewayxpay.chat",
+  "appName": "XPAY Chat",
+  "webDir": "mobile-www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "scheme": "xpaychat"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#101828",
+      "showSpinner": false
+    }
+  }
+}

@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#101828" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="XPAY Chat" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>XPAY Chat - Chat mạng xã hội</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260531-ios-parity" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="auth-screen" id="authScreen">
+        <div class="brand-panel">
+          <div class="signal-card">
+            <div class="ai-grid"></div>
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+            <div class="orbit orbit-three"></div>
+            <div class="pulse-node node-a"></div>
+            <div class="pulse-node node-b"></div>
+            <div class="pulse-node node-c"></div>
+            <div class="pulse-node node-d"></div>
+            <div class="ai-core">
+              <div class="core-ring"></div>
+              <div class="core-chip">
+                <span>AI</span>
+              </div>
+              <div class="data-line line-a"></div>
+              <div class="data-line line-b"></div>
+              <div class="data-line line-c"></div>
+            </div>
+            <div class="floating-panel panel-a">
+              <span>Thời gian thực</span>
+              <strong>12 ms</strong>
+            </div>
+            <div class="floating-panel panel-b">
+              <span>Quanh đây</span>
+              <strong>4.8 km</strong>
+            </div>
+            <div class="floating-panel panel-c">
+              <span>OTP bảo mật</span>
+              <strong>Đang bật</strong>
+            </div>
+          </div>
+          <p class="eyebrow">Giao diện mạng xã hội AI</p>
+          <h1>XPAY Chat</h1>
+          <p class="lead">
+            Trò chuyện, gọi video, nhật ký và kết nối quanh đây trong một trải nghiệm số được thiết kế cho thời đại AI.
+          </p>
+          <div class="trust-row">
+            <span>Sẵn sàng AI</span>
+            <span>Bảo mật OTP</span>
+            <span>Tìm quanh đây</span>
+            <span>Chat thời gian thực</span>
+            <span>Gọi video</span>
+          </div>
+          <div class="digital-metrics">
+            <div>
+              <strong>99.9%</strong>
+              <span>Mục tiêu ổn định</span>
+            </div>
+            <div>
+              <strong>24/7</strong>
+              <span>Kết nối liên tục</span>
+            </div>
+            <div>
+              <strong>AI</strong>
+              <span>Lớp AI tương lai</span>
+            </div>
+          </div>
+          <div class="copyright-brand" aria-label="Bản quyền Công Ty TNHH TM DV PHẦN MỀM XPAY">
+            <img src="assets/asean-holding-logo-cropped.png" alt="XPAY Software" />
+            <span>© 2026 Công Ty TNHH TM DV PHẦN MỀM XPAY</span>
+          </div>
+        </div>
+
+        <form class="login-card" id="loginForm">
+          <div>
+            <p class="eyebrow">Tài khoản bảo mật</p>
+            <h2 id="authTitle">Đăng nhập</h2>
+          </div>
+          <nav class="auth-tabs" aria-label="Tài khoản">
+            <button class="auth-tab active" type="button" data-auth-mode="login">Đăng nhập</button>
+            <button class="auth-tab" type="button" data-auth-mode="register">Đăng ký</button>
+            <button class="auth-tab" type="button" data-auth-mode="forgot">Quên mật khẩu</button>
+          </nav>
+          <label>
+            <span>Số điện thoại</span>
+            <input id="phoneInput" type="tel" inputmode="tel" placeholder="Ví dụ: 090 123 4567" required />
+          </label>
+          <label class="hidden" id="emailField">
+            <span>Email nhận OTP</span>
+            <input id="emailInput" type="email" inputmode="email" placeholder="admin@example.com" />
+          </label>
+          <label id="nameField">
+            <span>Tên hiển thị</span>
+            <input id="nameInput" type="text" placeholder="Tên của bạn" />
+          </label>
+          <label id="passwordField">
+            <span id="passwordLabel">Mật khẩu</span>
+            <input id="passwordInput" type="password" placeholder="Nhập mật khẩu" />
+          </label>
+          <label class="hidden" id="confirmPasswordField">
+            <span>Nhập lại mật khẩu</span>
+            <input id="confirmPasswordInput" type="password" placeholder="Nhập lại mật khẩu" />
+          </label>
+          <div class="otp-panel hidden" id="otpPanel">
+            <label>
+              <span>Mã OTP</span>
+              <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="Nhập 6 số OTP" />
+            </label>
+            <div class="otp-local-code" id="otpLocalCode"></div>
+          </div>
+          <div class="auth-actions">
+            <button class="primary-btn" id="authSubmitBtn" type="submit">Đăng nhập</button>
+            <button class="secondary-btn hidden" id="resendOtpBtn" type="button">Gửi lại mã</button>
+          </div>
+          <p class="auth-status" id="authStatus">Đăng nhập bằng số điện thoại và mật khẩu đã đăng ký.</p>
+          <p class="fine-print">
+            <span id="otpEmailNoticeText">OTP email sẽ được gửi duy nhất từ Email: admin@gatewayxpay.com</span>
+            <a id="privacyPolicyLink" href="privacy.html" target="_blank" rel="noopener">Chính sách quyền riêng tư</a>
+          </p>
+        </form>
+      </section>
+
+      <section class="chat-app zalo-shell native-sync-shell hidden" id="chatApp">
+        <aside class="sidebar">
+          <div class="profile-strip">
+            <button class="profile-button" id="profileBtn" type="button" aria-label="Chỉnh sửa hồ sơ">
+              <div class="avatar avatar-me" id="myAvatar">N</div>
+              <div>
+                <strong id="myName">Nexa User</strong>
+                <span id="myPhone">Đang hoạt động</span>
+              </div>
+            </button>
+            <button class="icon-btn" id="friendBtn" title="Kết bạn" aria-label="Kết bạn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M19 8v6"></path>
+                <path d="M22 11h-6"></path>
+              </svg>
+            </button>
+            <button class="icon-btn" id="settingsBtn" title="Cài đặt" aria-label="Cài đặt">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.8 1.8 0 0 0 .4 2l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.8 1.8 0 0 0-2-.4 1.8 1.8 0 0 0-1 1.7V21a2 2 0 1 1-4 0v-.2a1.8 1.8 0 0 0-1-1.7 1.8 1.8 0 0 0-2 .4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.8 1.8 0 0 0 .4-2 1.8 1.8 0 0 0-1.7-1H3a2 2 0 1 1 0-4h.2a1.8 1.8 0 0 0 1.7-1 1.8 1.8 0 0 0-.4-2l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.8 1.8 0 0 0 2 .4 1.8 1.8 0 0 0 1-1.7V3a2 2 0 1 1 4 0v.2a1.8 1.8 0 0 0 1 1.7 1.8 1.8 0 0 0 2-.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.8 1.8 0 0 0-.4 2 1.8 1.8 0 0 0 1.7 1h.2a2 2 0 1 1 0 4h-.2a1.8 1.8 0 0 0-1.7 1z"></path>
+              </svg>
+            </button>
+            <button class="icon-btn" id="logoutBtn" title="Đăng xuất" aria-label="Đăng xuất">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 17l5-5-5-5M15 12H3M21 19V5a2 2 0 0 0-2-2h-6M13 21h6a2 2 0 0 0 2-2" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M20 20l-3.5-3.5"></path>
+            </svg>
+            <input id="conversationSearch" type="search" placeholder="Tìm bạn bè, tin nhắn" />
+          </div>
+
+          <div class="quick-actions" aria-label="Tác vụ nhanh">
+            <button class="quick-action" type="button" data-quick-action="business">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 21h18"></path>
+                <path d="M5 21V7l8-4v18"></path>
+                <path d="M19 21V11l-6-4"></path>
+                <path d="M9 9h1"></path>
+                <path d="M9 13h1"></path>
+                <path d="M9 17h1"></path>
+                <path d="M16 14h1"></path>
+                <path d="M16 18h1"></path>
+              </svg>
+              <span>Doanh nghiệp</span>
+            </button>
+            <button class="quick-action" type="button" data-quick-action="friends">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9.5" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span>Bạn bè</span>
+            </button>
+            <button class="quick-action" type="button" data-quick-action="scan-qr">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7V4h3"></path>
+                <path d="M17 4h3v3"></path>
+                <path d="M20 17v3h-3"></path>
+                <path d="M7 20H4v-3"></path>
+                <path d="M7 12h10"></path>
+              </svg>
+              <span>Quét QR</span>
+            </button>
+            <button class="quick-action" type="button" data-quick-action="profile">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 21a8 8 0 0 1 16 0"></path>
+              </svg>
+              <span>Cá nhân</span>
+            </button>
+            <button class="quick-action" id="callShortcutBtn" type="button" data-quick-action="calls">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7A2 2 0 0 1 22 16.9z"></path>
+              </svg>
+              <span>Cuộc gọi</span>
+            </button>
+            <button class="quick-action app-admin-action hidden" id="appAdminBtn" type="button" data-quick-action="app-admin">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l8 4v5c0 5-3.4 8.5-8 9-4.6-.5-8-4-8-9V7l8-4z"></path>
+                <path d="M9 12l2 2 4-5"></path>
+              </svg>
+              <span>Quản trị</span>
+            </button>
+          </div>
+
+          <nav class="tab-bar" aria-label="Khu vực">
+            <button class="tab active" data-view="chats">Tin nhắn</button>
+            <button class="tab" data-view="nearby">Quanh đây</button>
+            <button class="tab" data-view="journal">Nhật ký</button>
+            <button class="tab" data-view="ai">XPAY AI</button>
+          </nav>
+
+          <div class="panel-list" id="chatList"></div>
+          <div class="panel-list hidden" id="nearbyList">
+            <div class="nearby-tools">
+              <button class="secondary-btn" id="locateBtn">Bật quanh đây</button>
+              <span id="locationStatus">Bật vị trí để tìm tài khoản XPAY Chat gần bạn</span>
+            </div>
+            <div id="peopleNearby"></div>
+          </div>
+          <div class="panel-list hidden" id="businessList"></div>
+          <div class="panel-list hidden" id="journalList">
+            <form class="journal-composer" id="journalForm">
+              <textarea id="journalTextInput" rows="3" placeholder="Bạn đang nghĩ gì?"></textarea>
+              <div class="journal-tools">
+                <div class="journal-privacy-tabs" role="group" aria-label="Quyền xem nhật ký">
+                  <button class="active" type="button" data-journal-privacy="public">Công khai</button>
+                  <button type="button" data-journal-privacy="friends">Bạn bè</button>
+                  <button type="button" data-journal-privacy="private">Riêng tư</button>
+                </div>
+                <select class="journal-privacy-select" id="journalPrivacyInput" aria-label="Quyền xem nhật ký" tabindex="-1">
+                  <option value="public">Mọi người</option>
+                  <option value="friends">Bạn bè</option>
+                  <option value="private">Chỉ mình tôi</option>
+                </select>
+                <label class="media-picker">
+                  <span>Ảnh</span>
+                  <input id="journalImageInput" type="file" accept="image/*" />
+                </label>
+              </div>
+              <div class="journal-preview hidden" id="journalPreview"></div>
+              <button class="primary-btn" type="submit">Đăng nhật ký</button>
+            </form>
+            <div id="journalPosts"></div>
+          </div>
+          <div class="panel-list hidden" id="aiAssistantList">
+            <section class="assistant-hub">
+              <div class="assistant-orb">AI</div>
+              <strong>XPAY Twin AI</strong>
+              <span>Trợ lý riêng</span>
+            </section>
+            <label class="assistant-toggle">
+              <input id="aiAutoReplyToggle" type="checkbox" />
+              <span>Tự trả lời chào hỏi</span>
+            </label>
+            <form class="assistant-rules" id="aiRulesForm">
+              <label>
+                <span>Quy tắc riêng cho XPAY AI</span>
+                <textarea
+                  id="aiRulesInput"
+                  rows="3"
+                  placeholder="Ví dụ: trả lời ngắn gọn, ưu tiên lịch công việc, không tự gửi tin quan trọng."
+                ></textarea>
+              </label>
+              <button class="secondary-btn" id="saveAiRulesBtn" type="submit">Lưu quy tắc</button>
+              <small id="aiRulesStatus">Quy tắc sẽ đồng bộ theo tài khoản.</small>
+            </form>
+            <div class="assistant-brief" id="aiAssistantBrief"></div>
+            <div class="assistant-prompts">
+              <button class="secondary-btn" type="button" data-ai-assistant-prompt="schedule">Lịch hẹn</button>
+              <button class="secondary-btn" type="button" data-ai-assistant-prompt="tasks">Công việc</button>
+              <button class="secondary-btn" type="button" data-ai-assistant-prompt="weekend">Cuối tuần</button>
+            </div>
+            <div class="assistant-agent">
+              <div class="agent-action-grid">
+                <button class="secondary-btn" type="button" data-ai-agent-action="plan">Tự lập kế hoạch</button>
+                <button class="secondary-btn" type="button" data-ai-agent-action="draft-reply">Soạn trả lời</button>
+                <button class="secondary-btn" type="button" data-ai-agent-action="journal-draft">Nháp nhật ký</button>
+                <button class="secondary-btn" type="button" data-ai-agent-action="security-scan">Quét an toàn</button>
+              </div>
+              <div class="agent-board" id="aiAgentBoard"></div>
+            </div>
+          </div>
+          <div class="sidebar-copyright" aria-label="Bản quyền Công Ty TNHH TM DV PHẦN MỀM XPAY">
+            <img src="assets/asean-holding-logo-cropped.png" alt="XPAY Software" />
+            <span>© 2026 Công Ty TNHH TM DV PHẦN MỀM XPAY</span>
+          </div>
+        </aside>
+
+        <section class="conversation">
+          <header class="conversation-header">
+            <button class="icon-btn back-btn" id="backToListBtn" title="Quay lại" aria-label="Quay lại danh sách chat">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 12H5"></path>
+                <path d="M12 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            <div class="avatar" id="activeAvatar">A</div>
+            <div>
+              <h2 id="activeName">An Nhiên</h2>
+              <span id="activeMeta">Bạn bè XPAY Chat</span>
+              <span class="e2ee-status" id="e2eeStatus">Đang bật mã hoá đầu cuối</span>
+            </div>
+            <div class="header-actions">
+              <button class="icon-btn ai-twin-btn" id="aiTwinBtn" title="XPAY Twin AI" aria-label="XPAY Twin AI">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2v4"></path>
+                  <path d="M12 18v4"></path>
+                  <path d="M4.9 4.9l2.8 2.8"></path>
+                  <path d="M16.3 16.3l2.8 2.8"></path>
+                  <path d="M2 12h4"></path>
+                  <path d="M18 12h4"></path>
+                  <path d="M4.9 19.1l2.8-2.8"></path>
+                  <path d="M16.3 7.7l2.8-2.8"></path>
+                  <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+              </button>
+              <button class="icon-btn" id="friendInfoBtn" title="Thông tin bạn bè" aria-label="Thông tin bạn bè">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 16v-4"></path>
+                  <path d="M12 8h.01"></path>
+                </svg>
+              </button>
+              <button class="icon-btn clear-chat-btn" id="clearConversationBtn" title="Xoá đoạn chat" aria-label="Xoá toàn bộ đoạn chat">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 6h18"></path>
+                  <path d="M8 6V4h8v2"></path>
+                  <path d="M19 6l-1 15H6L5 6"></path>
+                  <path d="M10 11v6"></path>
+                  <path d="M14 11v6"></path>
+                </svg>
+              </button>
+              <button class="icon-btn" id="voiceCallBtn" title="Gọi thoại" aria-label="Gọi thoại">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7A2 2 0 0 1 22 16.9z" />
+                </svg>
+              </button>
+              <button class="icon-btn" id="videoCallBtn" title="Gọi video" aria-label="Gọi video">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M23 7l-7 5 7 5V7z"></path>
+                  <rect x="1" y="5" width="15" height="14" rx="2"></rect>
+                </svg>
+              </button>
+            </div>
+          </header>
+
+          <div class="message-stage" id="messageStage"></div>
+
+          <aside class="ai-panel hidden" id="aiPanel" aria-live="polite">
+            <header class="ai-panel-header">
+              <div>
+                <span>XPAY Twin AI</span>
+                <strong>Trợ lý hội thoại</strong>
+              </div>
+              <button class="icon-btn" id="closeAiPanelBtn" type="button" aria-label="Đóng XPAY Twin AI">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="ai-panel-body">
+              <div class="ai-signal-strip" aria-label="Tín hiệu XPAY Twin AI">
+                <span id="aiMoodPill">Cảm xúc: đang đọc</span>
+                <span id="aiIntentPill">Ý định: đang đọc</span>
+                <span id="aiUrgencyPill">Ưu tiên: thường</span>
+              </div>
+              <section class="ai-card">
+                <span>Tóm tắt</span>
+                <p id="aiSummary">AI đang đọc ngữ cảnh cuộc trò chuyện.</p>
+              </section>
+              <section class="ai-card">
+                <span>Trạng thái hội thoại</span>
+                <p id="aiConversationState">XPAY Twin đang đánh giá nhịp trò chuyện, câu hỏi chưa trả lời và mức phù hợp.</p>
+              </section>
+              <section class="ai-card">
+                <span>Gợi ý trả lời</span>
+                <p id="aiSuggestion">Chọn một người bạn để AI đưa gợi ý phù hợp.</p>
+                <button class="secondary-btn ai-use-btn" id="useAiSuggestionBtn" type="button">Dùng gợi ý</button>
+              </section>
+              <section class="ai-card">
+                <span>3 phong cách trả lời</span>
+                <div class="ai-reply-grid" id="aiReplyGrid">
+                  <button class="secondary-btn ai-reply-btn" type="button" data-ai-reply="0">Ngắn gọn</button>
+                  <button class="secondary-btn ai-reply-btn" type="button" data-ai-reply="1">Thân thiện</button>
+                  <button class="secondary-btn ai-reply-btn" type="button" data-ai-reply="2">Chuyên nghiệp</button>
+                </div>
+              </section>
+              <section class="ai-card">
+                <span>Điểm chung</span>
+                <p id="aiCommon">AI sẽ tìm chủ đề chung từ hồ sơ và hội thoại.</p>
+              </section>
+              <section class="ai-card">
+                <span>Hành động thông minh</span>
+                <div class="ai-action-list" id="aiActions">AI sẽ đề xuất bước tiếp theo phù hợp với ngữ cảnh.</div>
+              </section>
+              <section class="ai-card">
+                <span>Nexa Memory</span>
+                <p id="aiMemory">AI ghi nhớ tạm thời những chủ đề quan trọng trong hội thoại này.</p>
+              </section>
+              <section class="ai-card">
+                <span>An toàn kết nối</span>
+                <p id="aiSafety">AI chỉ phân tích nội dung hiện có, không tự gửi tin nhắn.</p>
+              </section>
+              <section class="ai-card">
+                <span>Lời mở đầu</span>
+                <p id="aiOpener">Một lời chào tự nhiên sẽ xuất hiện tại đây.</p>
+                <button class="secondary-btn ai-use-btn" id="useAiOpenerBtn" type="button">Dùng lời mở đầu</button>
+              </section>
+            </div>
+            <button class="primary-btn ai-refresh-btn" id="refreshAiBtn" type="button">Làm mới AI</button>
+          </aside>
+
+          <form class="composer" id="messageForm">
+            <button class="icon-btn" id="attachMediaBtn" type="button" title="Đính kèm" aria-label="Đính kèm">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M21.4 11.6l-8.5 8.5a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 1 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"></path>
+              </svg>
+            </button>
+            <button class="icon-btn" id="sendLocationBtn" type="button" title="Gửi vị trí hiện tại" aria-label="Gửi vị trí hiện tại">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21s7-5.4 7-12a7 7 0 1 0-14 0c0 6.6 7 12 7 12z"></path>
+                <circle cx="12" cy="9" r="2.5"></circle>
+              </svg>
+            </button>
+            <button class="icon-btn" id="emojiBtn" type="button" title="Cảm xúc" aria-label="Mở cảm xúc nhanh" aria-expanded="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.4 2 4 2 4-2 4-2"></path>
+                <path d="M9 9h.01"></path>
+                <path d="M15 9h.01"></path>
+              </svg>
+            </button>
+            <div class="emoji-panel hidden" id="emojiPanel" aria-label="Cảm xúc nhanh">
+              <button type="button" data-emoji="😀" aria-label="Vui">😀</button>
+              <button type="button" data-emoji="😍" aria-label="Yêu thích">😍</button>
+              <button type="button" data-emoji="😂" aria-label="Cười lớn">😂</button>
+              <button type="button" data-emoji="😮" aria-label="Ngạc nhiên">😮</button>
+              <button type="button" data-emoji="😢" aria-label="Buồn">😢</button>
+              <button type="button" data-emoji="😡" aria-label="Giận">😡</button>
+              <button type="button" data-emoji="👍" aria-label="Đồng ý">👍</button>
+              <button type="button" data-emoji="❤️" aria-label="Yêu thương">❤️</button>
+              <button type="button" data-emoji="🎉" aria-label="Chúc mừng">🎉</button>
+              <button type="button" data-emoji="🙏" aria-label="Cảm ơn">🙏</button>
+            </div>
+            <input class="hidden" id="chatMediaInput" type="file" accept="image/*,video/*" />
+            <textarea
+              id="messageInput"
+              rows="1"
+              placeholder="Nhập tin nhắn..."
+              autocomplete="off"
+              autocapitalize="sentences"
+              enterkeyhint="send"
+              spellcheck="true"
+              lang="vi"
+              aria-label="Nhập tin nhắn"
+            ></textarea>
+            <button class="send-btn" type="submit" aria-label="Gửi">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 2L11 13"></path>
+                <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+              </svg>
+            </button>
+          </form>
+        </section>
+
+        <section class="info-overlay hidden" id="themeOverlay" aria-live="polite">
+          <div class="info-card theme-card">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Giao diện</p>
+                <h2>Chủ đề XPAY Chat</h2>
+              </div>
+              <button class="icon-btn" id="closeThemeBtn" type="button" aria-label="Đóng giao diện">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="theme-grid" id="themeGrid"></div>
+            <p class="friend-status" id="themeStatus">Chọn chủ đề để đổi màu giao diện.</p>
+          </div>
+        </section>
+
+        <section class="call-overlay hidden" id="callOverlay" aria-live="polite">
+          <div class="call-card">
+            <div class="call-video-stage" id="callVideoStage">
+              <audio id="remoteAudio" autoplay playsinline></audio>
+              <video class="remote-video hidden" id="remoteVideo" autoplay playsinline muted></video>
+              <video class="local-video hidden" id="localVideo" autoplay playsinline muted></video>
+              <div class="remote-placeholder" id="remotePlaceholder">
+                <div class="avatar call-avatar" id="callAvatar">A</div>
+                <span id="callModeLabel">Gọi thoại</span>
+              </div>
+            </div>
+            <div class="call-info">
+              <p class="eyebrow" id="callState">Đang kết nối</p>
+              <h2 id="callName">An Nhiên</h2>
+              <span id="callTimer">00:00</span>
+              <p id="callHint">Đang xin quyền micro...</p>
+            </div>
+            <div class="call-controls">
+              <button class="call-btn answer-call hidden" id="answerCallBtn" type="button" aria-label="Nghe máy">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7A2 2 0 0 1 22 16.9z" />
+                </svg>
+                <span>Nghe</span>
+              </button>
+              <button class="call-btn" id="muteBtn" type="button" aria-label="Tắt micro">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <path d="M12 19v4"></path>
+                  <path d="M8 23h8"></path>
+                </svg>
+                <span>Mic</span>
+              </button>
+              <button class="call-btn" id="cameraBtn" type="button" aria-label="Tắt camera">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M23 7l-7 5 7 5V7z"></path>
+                  <rect x="1" y="5" width="15" height="14" rx="2"></rect>
+                </svg>
+                <span>Camera</span>
+              </button>
+              <button class="call-btn" id="speakerBtn" type="button" aria-label="Bật loa ngoài">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                  <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                  <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                </svg>
+                <span>Loa ngoài</span>
+              </button>
+              <button class="call-btn end-call" id="endCallBtn" type="button" aria-label="Kết thúc cuộc gọi">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7A2 2 0 0 1 22 16.9z" />
+                </svg>
+                <span>Kết thúc</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="friend-overlay hidden" id="friendOverlay" aria-live="polite">
+          <div class="friend-card">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Kết bạn</p>
+                <h2>Thêm bạn mới</h2>
+              </div>
+              <button class="icon-btn" id="closeFriendBtn" type="button" aria-label="Đóng">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+
+            <nav class="friend-tabs" aria-label="Cách kết bạn">
+              <button class="friend-tab active" type="button" data-friend-view="phone">Số điện thoại</button>
+              <button class="friend-tab" type="button" data-friend-view="qr">Mã QR</button>
+              <button class="friend-tab" type="button" data-friend-view="scan">Quét QR</button>
+            </nav>
+
+            <form class="friend-panel" id="phoneFriendPanel">
+              <label>
+                <span>Số điện thoại bạn bè</span>
+                <input id="friendPhoneInput" type="tel" inputmode="tel" placeholder="Nhập số điện thoại" required />
+              </label>
+              <label>
+                <span>Tên hiển thị</span>
+                <input id="friendNameInput" type="text" placeholder="Để trống sẽ tự đặt tên" />
+              </label>
+              <button class="primary-btn" type="submit">Kết bạn ngay</button>
+            </form>
+
+            <div class="friend-panel hidden" id="qrFriendPanel">
+              <div class="qr-card">
+                <canvas id="myQrCanvas" width="236" height="236" aria-label="Mã QR tài khoản"></canvas>
+                <strong id="qrOwnerName">Nexa User</strong>
+                <span id="qrOwnerPhone">090...</span>
+              </div>
+            </div>
+
+            <div class="friend-panel hidden" id="scanFriendPanel">
+              <div class="scan-box">
+                <video id="qrScanVideo" autoplay playsinline muted></video>
+                <canvas id="qrScanCanvas" class="hidden"></canvas>
+                <div class="scan-frame"></div>
+              </div>
+              <div class="scan-actions">
+                <button class="secondary-btn" id="startScanBtn" type="button">Bật camera</button>
+                <button class="secondary-btn" id="stopScanBtn" type="button">Tắt quét</button>
+                <label class="secondary-btn qr-upload-btn" for="qrImageInput">Chọn ảnh QR</label>
+                <input id="qrImageInput" class="hidden-file" type="file" accept="image/*" />
+              </div>
+            </div>
+
+            <p class="friend-status" id="friendStatus">Nhập số điện thoại hoặc quét mã QR XPAY Chat để kết bạn.</p>
+          </div>
+        </section>
+
+        <section class="info-overlay hidden" id="callHistoryOverlay" aria-live="polite">
+          <div class="info-card call-history-card">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Cuộc gọi</p>
+                <h2>Lịch sử cuộc gọi</h2>
+              </div>
+              <button class="icon-btn" id="closeCallHistoryBtn" type="button" aria-label="Đóng lịch sử cuộc gọi">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="call-history-note">
+              Ưu tiên thống kê gọi đến, gọi đi, gọi nhỡ, máy bận, thời lượng và thời gian cuộc gọi.
+            </div>
+            <div class="call-history-list" id="callHistoryList"></div>
+            <div class="call-history-actions">
+              <button class="secondary-btn" id="refreshCallHistoryBtn" type="button">Làm mới cuộc gọi</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="profile-overlay hidden" id="profileOverlay" aria-live="polite">
+          <form class="profile-card" id="profileForm">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Hồ sơ</p>
+                <h2>Thông tin người dùng</h2>
+              </div>
+              <button class="icon-btn" id="closeProfileBtn" type="button" aria-label="Đóng">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+
+            <div class="profile-editor">
+              <div class="avatar-editor">
+                <div class="avatar avatar-me profile-preview" id="profileAvatarPreview">N</div>
+                <label class="avatar-upload">
+                  <span>Đổi avatar</span>
+                  <input id="profileAvatarInput" type="file" accept="image/*" />
+                </label>
+              </div>
+
+              <label>
+                <span>Họ và tên</span>
+                <input id="profileFullNameInput" type="text" placeholder="Nhập họ và tên" required />
+              </label>
+
+              <label class="profile-readonly-field">
+                <span>Email tài khoản</span>
+                <input id="profileEmailInput" type="email" readonly />
+                <small>Email dùng để nhận OTP và không thể đổi trong hồ sơ cá nhân.</small>
+              </label>
+
+              <label class="birth-date-field">
+                <span>Ngày tháng năm sinh</span>
+                <input id="profileBirthInput" type="date" inputmode="none" />
+                <div class="birth-date-selects" aria-label="Chọn ngày tháng năm sinh">
+                  <select id="profileBirthDayInput" aria-label="Chọn ngày sinh"></select>
+                  <select id="profileBirthMonthInput" aria-label="Chọn tháng sinh"></select>
+                  <select id="profileBirthYearInput" aria-label="Chọn năm sinh"></select>
+                </div>
+              </label>
+
+              <label>
+                <span>Sở thích</span>
+                <textarea id="profileInterestsInput" rows="4" placeholder="Ví dụ: công nghệ, du lịch, âm nhạc..."></textarea>
+              </label>
+
+              <div class="privacy-panel">
+                <div>
+                  <strong>Hiển thị thông tin cho người khác</strong>
+                  <p>Những mục bật sẽ được chia sẻ qua mã QR kết bạn.</p>
+                </div>
+                <label class="privacy-toggle">
+                  <input id="privacyPhoneInput" type="checkbox" />
+                  <span>Số điện thoại</span>
+                </label>
+                <label class="privacy-toggle">
+                  <input id="privacyBirthInput" type="checkbox" />
+                  <span>Ngày sinh</span>
+                </label>
+                <label class="privacy-toggle">
+                  <input id="privacyInterestsInput" type="checkbox" />
+                  <span>Sở thích</span>
+                </label>
+                <label class="privacy-toggle">
+                  <input id="privacyAvatarInput" type="checkbox" />
+                  <span>Avatar</span>
+                </label>
+              </div>
+
+              <button class="primary-btn" type="submit">Lưu hồ sơ</button>
+
+              <div class="profile-account-panel">
+                <div>
+                  <strong>Xoá tài khoản</strong>
+                  <p>Yêu cầu xoá tài khoản vĩnh viễn khỏi XPAY Chat.</p>
+                </div>
+                <button class="danger-btn profile-delete-account-btn" id="profileDeleteAccountBtn" type="button">Xoá tài khoản</button>
+              </div>
+
+              <p class="friend-status" id="profileStatus">Thông tin hồ sơ sẽ được cập nhật sau khi lưu.</p>
+            </div>
+          </form>
+        </section>
+
+        <section class="info-overlay hidden" id="friendInfoOverlay" aria-live="polite">
+          <div class="info-card">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Bạn bè</p>
+                <h2>Thông tin cá nhân</h2>
+              </div>
+              <button class="icon-btn" id="closeFriendInfoBtn" type="button" aria-label="Đóng">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="info-profile">
+              <div class="avatar profile-preview" id="friendInfoAvatar">A</div>
+              <h3 id="friendInfoName">An Nhiên</h3>
+              <span id="friendInfoStatus">Đang online</span>
+            </div>
+            <div class="info-list" id="friendInfoList"></div>
+          </div>
+        </section>
+
+        <section class="info-overlay hidden" id="friendsOverlay" aria-live="polite">
+          <div class="info-card friends-card">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Danh bạ</p>
+                <h2>Bạn bè</h2>
+              </div>
+              <button class="icon-btn" id="closeFriendsBtn" type="button" aria-label="Đóng">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="referral-panel">
+              <p class="eyebrow">Giới thiệu bạn mới</p>
+              <strong id="referralPointsText">Điểm giới thiệu: 0 điểm</strong>
+              <span>Nội dung chia sẻ kèm lời mời tham gia XPAY Chat và hướng dẫn cài đặt chính thức.</span>
+              <div class="referral-actions">
+                <button class="primary-btn" id="createReferralBtn" type="button">Tạo link</button>
+                <button class="secondary-btn" id="shareReferralBtn" type="button">Chia sẻ</button>
+              </div>
+              <p class="friend-status" id="referralStatus">Mỗi tài khoản mới xác minh thành công qua link giới thiệu sẽ được tính 1 điểm.</p>
+            </div>
+            <div class="friends-directory" id="friendsDirectoryList"></div>
+          </div>
+        </section>
+
+        <section class="info-overlay hidden" id="appAdminOverlay" aria-live="polite">
+          <div class="info-card app-admin-card">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Tài khoản đặc quyền</p>
+                <h2>Thông tin người dùng</h2>
+              </div>
+              <button class="icon-btn" id="closeAppAdminBtn" type="button" aria-label="Đóng quản trị">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="app-admin-toolbar">
+              <input id="appAdminSearchInput" type="search" placeholder="Tìm tên, số điện thoại, sở thích..." />
+              <button class="secondary-btn" id="refreshAppAdminBtn" type="button">Làm mới</button>
+            </div>
+            <div class="app-admin-meta" id="appAdminStatus">Chỉ tài khoản 0902815111 được xem mục này.</div>
+            <div class="app-admin-businesses" id="appAdminBusinessList"></div>
+            <div class="app-admin-layout">
+              <div class="app-admin-users" id="appAdminUsersList"></div>
+              <div class="app-admin-detail" id="appAdminDetail">
+                <div class="detail-empty">
+                  <strong>Chọn người dùng</strong>
+                  <span>Thông tin hồ sơ và trạng thái sẽ hiển thị tại đây.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-overlay hidden" id="settingsOverlay" aria-live="polite">
+          <div class="info-card settings-card">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Thiết lập</p>
+                <h2>Cài đặt</h2>
+              </div>
+              <button class="icon-btn" id="closeSettingsBtn" type="button" aria-label="Đóng cài đặt">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="settings-body">
+              <section class="settings-section">
+                <div class="settings-title">
+                  <strong>Trạng thái</strong>
+                  <span>Hiển thị online/offline và quyền chia sẻ khoảng cách</span>
+                </div>
+                <label class="settings-toggle">
+                  <input id="presenceOnlineSetting" type="radio" name="presenceStatusSetting" value="online" />
+                  <span>Online - cho bạn bè biết bạn đang hoạt động</span>
+                </label>
+                <label class="settings-toggle">
+                  <input id="presenceOfflineSetting" type="radio" name="presenceStatusSetting" value="offline" />
+                  <span>Offline - ẩn trạng thái và khoảng cách</span>
+                </label>
+              </section>
+
+              <section class="settings-section">
+                <div class="settings-title">
+                  <strong>Thông báo</strong>
+                  <span>Thông báo khi tắt màn hình, âm báo, rung và dấu hiệu tin mới</span>
+                </div>
+                <label class="settings-toggle">
+                  <input id="pushNotificationSetting" type="checkbox" />
+                  <span>Thông báo ngoài màn hình cho tin nhắn và cuộc gọi</span>
+                </label>
+                <label class="settings-toggle">
+                  <input id="messageSoundSetting" type="checkbox" />
+                  <span>Âm báo khi có tin nhắn mới</span>
+                </label>
+                <label class="settings-toggle">
+                  <input id="messageVibrationSetting" type="checkbox" />
+                  <span>Rung khi có tin nhắn mới</span>
+                </label>
+                <label class="settings-toggle">
+                  <input id="unreadHighlightSetting" type="checkbox" />
+                  <span>Làm sáng hội thoại chưa đọc</span>
+                </label>
+              </section>
+
+              <section class="settings-section">
+                <div class="settings-title">
+                  <strong>Tin nhắn</strong>
+                  <span>Quản lý trạng thái đã đọc</span>
+                </div>
+                <label class="settings-toggle">
+                  <input id="markReadOnOpenSetting" type="checkbox" />
+                  <span>Tự đánh dấu đã đọc khi mở hội thoại</span>
+                </label>
+                <button class="secondary-btn settings-action" id="markAllReadBtn" type="button">Đánh dấu tất cả đã đọc</button>
+              </section>
+
+              <section class="settings-section">
+                <div class="settings-title">
+                  <strong>Cuộc gọi</strong>
+                  <span>Âm chuông, rung và âm chờ</span>
+                </div>
+                <label class="settings-toggle">
+                  <input id="callRingtoneSetting" type="checkbox" />
+                  <span>Đổ chuông khi có cuộc gọi đến</span>
+                </label>
+                <label class="settings-toggle">
+                  <input id="callVibrationSetting" type="checkbox" />
+                  <span>Rung khi có cuộc gọi đến</span>
+                </label>
+                <label class="settings-toggle">
+                  <input id="callRingbackSetting" type="checkbox" />
+                  <span>Phát âm chờ khi gọi đi</span>
+                </label>
+              </section>
+
+              <section class="settings-section">
+                <div class="settings-title">
+                  <strong>XPAY AI</strong>
+                  <span>Trợ lý cá nhân theo quy tắc của chủ tài khoản</span>
+                </div>
+                <label class="settings-toggle">
+                  <input id="settingsAiAutoReplyToggle" type="checkbox" />
+                  <span>Tự trả lời các lời chào hỏi đơn giản</span>
+                </label>
+                <button class="secondary-btn settings-action" id="openAiSettingsBtn" type="button">Mở XPAY AI</button>
+              </section>
+
+              <section class="settings-section account-section">
+                <div class="settings-title">
+                  <strong>Tài khoản và quyền riêng tư</strong>
+                  <span>Quản lý dữ liệu cá nhân, chính sách bảo mật và xoá tài khoản</span>
+                </div>
+                <a class="secondary-btn settings-action" href="privacy.html" target="_blank" rel="noopener">Xem chính sách quyền riêng tư</a>
+                <a class="secondary-btn settings-action" href="terms.html" target="_blank" rel="noopener">Điều khoản và quy tắc cộng đồng</a>
+                <button class="danger-btn settings-action" id="deleteAccountBtn" type="button">Xoá tài khoản</button>
+              </section>
+
+              <p class="settings-status" id="settingsStatus">Các thay đổi sẽ được áp dụng ngay.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-overlay hidden" id="accountDeleteOverlay" aria-live="polite">
+          <form class="info-card account-delete-card" id="accountDeleteForm">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Bảo mật tài khoản</p>
+                <h2>Xoá tài khoản XPAY Chat</h2>
+              </div>
+              <button class="icon-btn" id="closeAccountDeleteBtn" type="button" aria-label="Đóng xoá tài khoản">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </header>
+            <div class="settings-body">
+              <section class="settings-section account-danger-panel">
+                <div class="settings-title">
+                  <strong>Thao tác này không thể hoàn tác</strong>
+                  <span>Tài khoản, hồ sơ, bạn bè, tin nhắn, cuộc gọi và nhật ký liên quan sẽ được xoá khỏi hệ thống.</span>
+                </div>
+                <label>
+                  <span>Mật khẩu hiện tại</span>
+                  <input id="accountDeletePasswordInput" type="password" autocomplete="current-password" required />
+                </label>
+                <label>
+                  <span>Gõ DELETE để xác nhận</span>
+                  <input id="accountDeleteConfirmInput" type="text" autocomplete="off" placeholder="DELETE" required />
+                </label>
+                <button class="danger-btn" type="submit">Xoá vĩnh viễn tài khoản</button>
+                <p class="settings-status" id="accountDeleteStatus">Chỉ chủ tài khoản đã đăng nhập mới có thể thực hiện thao tác này.</p>
+              </section>
+            </div>
+          </form>
+        </section>
+      </section>
+    </main>
+
+    <script src="vendor/qrious.min.js"></script>
+    <script src="vendor/jsQR.js"></script>
+    <script src="app.js?v=20260531-ios-parity"></script>
+  </body>
+</html>

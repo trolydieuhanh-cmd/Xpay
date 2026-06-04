@@ -1,0 +1,26 @@
+[Unit]
+Description=XPAY Chat API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/docker/xpaychat-prod
+EnvironmentFile=/etc/xpaychat/xpaychat.env
+ExecStart=/usr/bin/node /docker/xpaychat-prod/server.js
+Restart=always
+RestartSec=3
+User=xpaychat
+Group=xpaychat
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+ProtectSystem=full
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/docker/xpaychat-prod/data
+
+[Install]
+WantedBy=multi-user.target

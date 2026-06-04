@@ -1,0 +1,33 @@
+{
+  "name": "xpaychat",
+  "version": "1.0.0-store-rc.1",
+  "private": true,
+  "description": "XPAY Chat API and static app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check app.js && node --check admin.js && node --check service-worker.js",
+    "build:agency-pack": "node scripts/build-agency-agent-pack.js",
+    "test:xpay-ai-100": "node scripts/nexa-ai-100-turn-test.js",
+    "test:qa-100-users-calls": "node scripts/qa-100-users-calls.js",
+    "mobile:prepare": "node scripts/prepare-mobile-web.js",
+    "cap:sync": "npm run mobile:prepare && npx cap sync",
+    "android:build": "npm run mobile:prepare && npx cap sync android && ANDROID_HOME=\"$HOME/Library/Android/sdk\" ANDROID_SDK_ROOT=\"$HOME/Library/Android/sdk\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ./android/gradlew -p android :app:assembleDebug",
+    "android:bundle": "npm run mobile:prepare && npx cap sync android && ANDROID_HOME=\"$HOME/Library/Android/sdk\" ANDROID_SDK_ROOT=\"$HOME/Library/Android/sdk\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ./android/gradlew -p android :app:bundleRelease",
+    "native:android:bundle": "ANDROID_HOME=\"$HOME/Library/Android/sdk\" ANDROID_SDK_ROOT=\"$HOME/Library/Android/sdk\" JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ./android/gradlew -p native/android-telegram-style :app:bundleRelease",
+    "android:apk": "npm run android:build && mkdir -p dist && cp android/app/build/outputs/apk/debug/app-debug.apk dist/XPAYChat-android-html-ui-full.apk",
+    "ios:setup-simulator": "bash scripts/setup-ios-simulator.sh",
+    "android:open": "npx cap open android",
+    "ios:open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/push-notifications": "^7.0.6",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  }
+}

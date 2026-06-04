@@ -1,0 +1,38 @@
+# Runtime data and secrets
+data/
+backups/
+secrets/
+node_modules/
+.env
+*.env
+*.hprof
+**/google-services.json
+!deploy/*.env.example
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.log
+
+# Local system/build noise
+.DS_Store
+._*
+*.icloud
+android/app/src/main/assets/**/* [0-9].*
+ios/App/App/public/**/* [0-9].*
+mobile-www/**/* [0-9].*
+android/app/src/main/res/xml/config [0-9].xml
+ios/App/App/config [0-9].xml
+dist/
+coverage/
+mobile-www/
+
+# Native rewrite workspaces
+native/**/.gradle/
+native/**/build/
+native/**/app/build/
+android/**/build [0-9]/
+android/build 2/
+
+# External source references for study only
+references/

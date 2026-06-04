@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101828" />
+    <title>XPAY Chat Admin - Công Ty TNHH TM DV PHẦN MỀM XPAY</title>
+    <link rel="stylesheet" href="admin.css?v=5" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <section class="admin-login" id="loginPanel">
+        <div class="brand-mark">
+          <span>AI</span>
+        </div>
+        <p class="eyebrow">Công Ty TNHH TM DV PHẦN MỀM XPAY Admin</p>
+        <h1>Quản lý dữ liệu XPAY Chat</h1>
+        <p class="lead">Nhập mã quản trị để xem danh sách tài khoản, thông tin hồ sơ đã cập nhật và xuất Excel.</p>
+        <form class="token-form" id="tokenForm">
+          <label>
+            <span>Mã quản trị</span>
+            <input id="adminTokenInput" type="password" placeholder="Nhập ADMIN_TOKEN" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Vào trang admin</button>
+        </form>
+        <p class="status" id="loginStatus">Trang admin chỉ đọc dữ liệu, không xoá và không ghi đè tài khoản cũ.</p>
+      </section>
+
+      <section class="dashboard hidden" id="dashboard">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">XPAY Chat Admin</p>
+            <h1>Người dùng</h1>
+          </div>
+          <div class="top-actions">
+            <button class="secondary-btn" id="refreshBtn" type="button">Làm mới</button>
+            <button class="primary-btn" id="exportBtn" type="button">Xuất Excel</button>
+            <button class="ghost-btn" id="logoutAdminBtn" type="button">Đăng xuất</button>
+          </div>
+        </header>
+
+        <section class="stats-grid" aria-label="Thống kê">
+          <article>
+            <span>Tổng tài khoản</span>
+            <strong id="totalUsers">0</strong>
+          </article>
+          <article>
+            <span>Đã xác thực SĐT</span>
+            <strong id="verifiedUsers">0</strong>
+          </article>
+          <article>
+            <span>Đang online</span>
+            <strong id="onlineUsers">0</strong>
+          </article>
+          <article>
+            <span>Offline do tắt trạng thái</span>
+            <strong id="manualOfflineUsers">0</strong>
+          </article>
+          <article>
+            <span>Offline do không đăng nhập</span>
+            <strong id="inactiveOfflineUsers">0</strong>
+          </article>
+          <article>
+            <span>Có avatar</span>
+            <strong id="avatarUsers">0</strong>
+          </article>
+          <article>
+            <span>Bật quanh đây</span>
+            <strong id="nearbyUsers">0</strong>
+          </article>
+          <article>
+            <span>Có tích xanh</span>
+            <strong id="blueTickUsers">0</strong>
+          </article>
+          <article>
+            <span>Tài khoản VIP</span>
+            <strong id="vipUsers">0</strong>
+          </article>
+        </section>
+
+        <section class="toolbar">
+          <label>
+            <span>Tìm kiếm</span>
+            <input id="searchInput" type="search" placeholder="Tên, số điện thoại, sở thích..." />
+          </label>
+          <div class="sync-note">
+            <span id="syncTime">Chưa tải dữ liệu</span>
+            <small>Dữ liệu được đọc trực tiếp từ VPS.</small>
+          </div>
+        </section>
+
+        <section class="business-admin-card">
+          <div class="business-admin-head">
+            <div>
+              <p class="eyebrow">Doanh nghiệp</p>
+              <h2>Kiểm duyệt hồ sơ doanh nghiệp</h2>
+            </div>
+            <span id="businessAdminCount">0 hồ sơ</span>
+          </div>
+          <div class="business-admin-list" id="businessAdminList"></div>
+        </section>
+
+        <section class="content-grid">
+          <div class="table-card">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Người dùng</th>
+                    <th>Số điện thoại</th>
+                    <th>Phân loại</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày sinh</th>
+                    <th>Sở thích</th>
+                    <th>Bạn bè</th>
+                    <th>Cập nhật</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+              </table>
+            </div>
+            <p class="empty-state hidden" id="emptyState">Không tìm thấy người dùng phù hợp.</p>
+          </div>
+
+          <aside class="detail-card" id="detailCard">
+            <div class="detail-empty">
+              <strong>Chọn một người dùng</strong>
+              <span>Thông tin hồ sơ, quyền hiển thị và trạng thái thiết bị sẽ xuất hiện tại đây.</span>
+            </div>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <script src="admin.js?v=5"></script>
+  </body>
+</html>
