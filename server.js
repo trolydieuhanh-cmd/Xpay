@@ -25,6 +25,7 @@ loadEnv(path.join(ROOT, ".env"));
 
 const PORT = Number(process.env.PORT || 4187);
 const HOST = process.env.HOST || "127.0.0.1";
+const XPAY_CHAT_UPSTREAM = (process.env.XPAY_CHAT_UPSTREAM || "http://127.0.0.1:4182").replace(/\/+$/, "");
 const listeners = new Set();
 
 ensureStateFile();
@@ -184,6 +185,47 @@ function sendText(res, status, body, contentType = "text/plain; charset=utf-8", 
     ...headers
   });
   res.end(body);
+}
+
+function redirect(res, location, status = 302) {
+  res.writeHead(status, {
+    Location: location,
+    "Cache-Control": "no-store"
+  });
+  res.end();
+}
+
+function proxyToXpayChat(req, res, prefix, url) {
+  const upstream = new URL(XPAY_CHAT_UPSTREAM);
+  const strippedPath = url.pathname.slice(prefix.length) || "/";
+  const requestPath = `${strippedPath.startsWith("/") ? strippedPath : `/${strippedPath}`}${url.search}`;
+  const headers = { ...req.headers, host: upstream.host };
+  delete headers.connection;
+  delete headers["content-length"];
+
+  const proxyReq = http.request({
+    protocol: upstream.protocol,
+    hostname: upstream.hostname,
+    port: upstream.port || (upstream.protocol === "https:" ? 443 : 80),
+    method: req.method,
+    path: requestPath,
+    headers
+  }, (proxyRes) => {
+    const responseHeaders = { ...proxyRes.headers };
+    delete responseHeaders.connection;
+    delete responseHeaders["transfer-encoding"];
+    res.writeHead(proxyRes.statusCode || 502, responseHeaders);
+    proxyRes.pipe(res);
+  });
+
+  proxyReq.on("error", () => {
+    if (!res.headersSent) {
+      sendText(res, 502, "XPAY Chat chưa sẵn sàng. Vui lòng thử lại sau.");
+    } else {
+      res.end();
+    }
+  });
+  req.pipe(proxyReq);
 }
 
 function parseCookies(req) {
@@ -908,7 +950,7 @@ function serveStatic(req, res, url) {
   let pathname = decodeURIComponent(url.pathname);
   if (pathname === "/") pathname = "/index.html";
   if (pathname === "/admin") pathname = "/admin.html";
-  if (pathname === "/chat") pathname = "/chat.html";
+  if (pathname === "/license") pathname = "/chat.html";
   const filePath = path.normalize(path.join(PUBLIC_DIR, pathname));
   if (!filePath.startsWith(PUBLIC_DIR)) {
     return sendText(res, 403, "Forbidden");
@@ -937,6 +979,22 @@ function serveStatic(req, res, url) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+  if (url.pathname === "/chat" || url.pathname === "/chat/") {
+    redirect(res, "/chat-app/");
+    return;
+  }
+  if (url.pathname === "/chat-app") {
+    redirect(res, "/chat-app/");
+    return;
+  }
+  if (url.pathname.startsWith("/chat-app/")) {
+    proxyToXpayChat(req, res, "/chat-app", url);
+    return;
+  }
+  if (url.pathname.startsWith("/chat-api/")) {
+    proxyToXpayChat(req, res, "/chat-api", url);
+    return;
+  }
   if (url.pathname.startsWith("/api/")) {
     handleApi(req, res, url);
     return;

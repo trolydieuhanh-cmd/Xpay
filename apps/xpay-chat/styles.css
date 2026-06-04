@@ -605,6 +605,12 @@ h1 {
   object-fit: contain;
 }
 
+.xpay-hero-logo {
+  width: min(250px, 70%);
+  height: auto;
+  margin: 20px auto 0;
+}
+
 .login-card h2 {
   margin-bottom: 18px;
   font-size: clamp(1.9rem, 2.8vw, 2.45rem);

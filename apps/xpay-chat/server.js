@@ -372,7 +372,7 @@ function viewerLocationFromUserOrBody(user = {}, body = {}) {
 
 function normalizeProfile(profile = {}, phone = "") {
   const accountPhone = normalizePhone(phone || profile.accountPhone || profile.phone);
-  const name = profile.fullName || profile.name || `Nexa ${accountPhone.slice(-4)}`;
+  const name = profile.fullName || profile.name || `XPAY ${accountPhone.slice(-4)}`;
   return {
     accountPhone,
     phone: profile.phone || accountPhone,
@@ -567,7 +567,7 @@ function normalizeBusinessProfile(input = {}, owner = {}) {
   const allowedStatus = new Set(["pending", "approved", "needs_changes", "restricted", "locked", "rejected", "hidden"]);
   const rawStatus = input.status === "published" ? "approved" : input.status;
   const status = allowedStatus.has(rawStatus) ? rawStatus : "pending";
-  const name = truncateServerText(input.name || input.businessName || ownerProfile.fullName || "Doanh nghiệp Nexa", 90);
+  const name = truncateServerText(input.name || input.businessName || ownerProfile.fullName || "Doanh nghiệp XPAY", 90);
   const category = truncateServerText(input.category || "Dịch vụ", 56);
   const description = truncateServerText(input.description || input.about || "", 260);
   const address = truncateServerText(input.address || input.area || "", 140);
@@ -605,7 +605,7 @@ function normalizeBusinessProfile(input = {}, owner = {}) {
   return {
     id: ownerPhone || String(input.id || `business-${Date.now()}`),
     ownerPhone,
-    ownerName: ownerProfile.fullName || ownerProfile.name || "Nexa User",
+    ownerName: ownerProfile.fullName || ownerProfile.name || "XPAY User",
     avatarData: ownerProfile.avatarData || "",
     name,
     category,
@@ -905,7 +905,7 @@ function searchBusinessPayloads(profiles = [], query = "", viewerPhone = "", lim
 function compactAiBusiness(profile = {}) {
   const business = normalizeBusinessProfile(profile, {});
   return {
-    name: truncateServerText(business.name || "Doanh nghiệp Nexa", 80),
+    name: truncateServerText(business.name || "Doanh nghiệp XPAY", 80),
     category: truncateServerText(business.category || "Dịch vụ", 60),
     description: truncateServerText(business.description || "", 160),
     services: truncateServerText(business.services || "", 160),
@@ -2619,7 +2619,7 @@ function journalPayload(db, post) {
   return {
     id: post.id,
     authorPhone: post.authorPhone,
-    authorName: profile?.fullName || profile?.name || post.authorName || "Nexa User",
+    authorName: profile?.fullName || profile?.name || post.authorName || "XPAY User",
     avatarData: profile?.avatarData || "",
     text: post.text || "",
     privacy: post.privacy || "friends",
@@ -3782,7 +3782,7 @@ async function pgJournalPayload(client, post) {
   return {
     id: post.id,
     authorPhone: post.authorPhone,
-    authorName: profile?.fullName || profile?.name || post.authorName || "Nexa User",
+    authorName: profile?.fullName || profile?.name || post.authorName || "XPAY User",
     avatarData: profile?.avatarData || "",
     text: post.text || "",
     privacy: post.privacy || "friends",
@@ -4580,7 +4580,7 @@ function aiAgencyLocalAnswer(prompt = "", selectedAgents = []) {
       .slice(0, 8)
       .map(([category, count]) => `${category}: ${count}`)
       .join(", ");
-    return `XPAY AI đã nạp ${AGENCY_AGENT_PACK.agentCount || selectedAgents.length} agent chuyên môn từ Agency pack. Nhóm lớn gồm: ${categoryBrief}. Khi anh hỏi, Nexa sẽ chọn vài agent liên quan nhất thay vì dùng toàn bộ cùng lúc.`;
+    return `XPAY AI đã nạp ${AGENCY_AGENT_PACK.agentCount || selectedAgents.length} agent chuyên môn từ Agency pack. Nhóm lớn gồm: ${categoryBrief}. Khi anh hỏi, XPAY Chat sẽ chọn vài agent liên quan nhất thay vì dùng toàn bộ cùng lúc.`;
   }
   const agentLines = selectedAgents.slice(0, 3).map((agent, index) => {
     const method = agent.workflow || agent.mission || agent.deliverables || agent.description;
@@ -5861,7 +5861,7 @@ function aiSmartContextAnswer(prompt = "", assistantHistory = [], reminders = []
   }
 
   if (aiHasAny(plain, ["hieu sai", "hiểu sai"])) {
-    return "Câu dễ gây hiểu sai nhất là các câu có đại từ mơ hồ như 'cái đó', 'nó', 'nhanh hơn'. Chúng dễ làm Nexa nhầm giữa lịch vừa tạo, câu trả lời vừa nói và chủ đề đang bàn.";
+    return "Câu dễ gây hiểu sai nhất là các câu có đại từ mơ hồ như 'cái đó', 'nó', 'nhanh hơn'. Chúng dễ làm XPAY Chat nhầm giữa lịch vừa tạo, câu trả lời vừa nói và chủ đề đang bàn.";
   }
 
   if (aiHasAny(plain, ["gap som", "gặp sớm", "vi sao gap", "vì sao gặp"])) {
@@ -5968,7 +5968,7 @@ function buildAiAssistantAnswer({ prompt, user, rules, reminders, recentMessages
 
   if (containsSensitiveAiData(prompt)) {
     if (aiHasAny(plain, ["cccd", "can cuoc", "căn cước"])) {
-      parts.push("Ảnh CCCD là dữ liệu rất nhạy cảm. Không an toàn nếu gửi khi chưa cần thiết; nếu bắt buộc gửi, anh nên che số định danh/phần không liên quan, xác minh người nhận và không để Nexa tự chuyển tiếp nội dung này.");
+      parts.push("Ảnh CCCD là dữ liệu rất nhạy cảm. Không an toàn nếu gửi khi chưa cần thiết; nếu bắt buộc gửi, anh nên che số định danh/phần không liên quan, xác minh người nhận và không để XPAY Chat tự chuyển tiếp nội dung này.");
     }
     parts.push("Mình đã phát hiện nội dung có thể chứa OTP, mật khẩu, token, email hoặc dữ liệu nhạy cảm. Để bảo mật, mình sẽ không gửi phần này sang model ngoài và không nhắc lại dữ liệu gốc trong câu trả lời.");
   }
@@ -6251,7 +6251,7 @@ function externalAiStatus() {
 function compactAiProfile(user) {
   const profile = publicProfile(user, true);
   return {
-    name: redactSensitiveText(profile.fullName || profile.name || "Nexa User", 80),
+    name: redactSensitiveText(profile.fullName || profile.name || "XPAY User", 80),
     interests: redactSensitiveText(profile.interests || "", 180),
     birthDate: profile.birthDate || ""
   };

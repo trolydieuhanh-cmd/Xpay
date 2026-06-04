@@ -87,6 +87,7 @@ const hiddenChatsKey = "xpaychat.hiddenChats";
 const aiAssistantResetKey = "xpaychat.aiAssistantReset";
 const appVersion = "1.0.0-store-rc1";
 const productionOrigin = "https://gatewayxpay.com";
+const apiBasePath = String(window.XPAY_CHAT_API_BASE || (location.pathname.startsWith("/chat-app") ? "/chat-api" : "")).replace(/\/+$/, "");
 const messageReactionOptions = ["❤️", "👍", "😂", "😮", "😢", "🙏"];
 
 const authScreen = document.querySelector("#authScreen");
@@ -741,6 +742,7 @@ function isServerRuntime() {
 }
 
 function apiUrl(path = "") {
+  if (apiBasePath && String(path).startsWith("/api/")) return `${apiBasePath}${path}`;
   if (isNativeRuntime() && String(path).startsWith("/api/")) return `${productionOrigin}${path}`;
   return path;
 }
@@ -1666,7 +1668,7 @@ function formatAiDueTime(value = "") {
 }
 
 function normalizeUser(user = {}) {
-  const name = user.name || user.fullName || "Nexa User";
+  const name = user.name || user.fullName || "XPAY User";
   const privacy = user.privacy || {};
   const accountPhone = normalizePhone(user.accountPhone || user.phone || "");
   const normalizedUser = { ...user, accountPhone };
@@ -2009,7 +2011,7 @@ function applyServerBusinesses(businesses = []) {
 function applyServerBusinessInbox(items = []) {
   businessInbox = Array.isArray(items) ? items.map((item) => ({
     phone: normalizePhone(item.phone || item.customerPhone || ""),
-    name: String(item.name || "Khách hàng Nexa").trim(),
+    name: String(item.name || "Khách hàng XPAY").trim(),
     avatarData: String(item.avatarData || "").trim(),
     status: String(item.status || "new"),
     statusLabel: String(item.statusLabel || businessCustomerStatusLabel(item.status || "new")),
@@ -2092,7 +2094,7 @@ function callPeerToPerson(call) {
   const peerPhone = normalizePhone(call.peer?.accountPhone || call.peer?.phone || activeCallPeerPhone);
   const existing = people.find((person) => friendPhone(person) === peerPhone);
   if (existing) return normalizedPerson(existing);
-  return profileToPerson(call.peer || { accountPhone: peerPhone, fullName: "Nexa User" }, people.length);
+  return profileToPerson(call.peer || { accountPhone: peerPhone, fullName: "XPAY User" }, people.length);
 }
 
 function applyServerCalls(calls = []) {
@@ -2156,7 +2158,7 @@ function renderCallHistory() {
   callHistoryList.innerHTML = calls
     .map((call) => {
       const peer = call.peer || {};
-      const peerName = peer.fullName || peer.name || call.peerPhone || "Nexa User";
+      const peerName = peer.fullName || peer.name || call.peerPhone || "XPAY User";
       const time = formatDateTime(call.updatedAt || call.createdAt || "");
       const duration = callDurationLabel(call);
       return `
@@ -2227,7 +2229,7 @@ function stopServerSync() {
 }
 
 function paintAvatar(element, user) {
-  const label = user.fullName || user.name || "Nexa User";
+  const label = user.fullName || user.name || "XPAY User";
   element.textContent = user.avatarData ? "" : initials(label);
   element.style.backgroundImage = user.avatarData ? `url("${user.avatarData}")` : "";
 }
@@ -2316,7 +2318,7 @@ function insertEmoji(emoji = "") {
 }
 
 function displayNameWithBadges(person = {}) {
-  return `${escapeHtml(person.name || "Nexa User")}${accountBadgeMarkup(person)}`;
+  return `${escapeHtml(person.name || "XPAY User")}${accountBadgeMarkup(person)}`;
 }
 
 function saveUser(user) {
@@ -2684,7 +2686,7 @@ function renderBusinessCard(profile = {}, options = {}) {
       <header>
         ${businessLogoMarkup(business)}
         <div>
-          <strong>${escapeHtml(business.name || "Doanh nghiệp Nexa")}</strong>
+          <strong>${escapeHtml(business.name || "Doanh nghiệp XPAY")}</strong>
           <span>${escapeHtml(business.category || "Dịch vụ")}</span>
         </div>
         ${badge}
@@ -4015,7 +4017,7 @@ function buildAiTwinInsight() {
       replies: [],
       common: "Chưa có dữ liệu để tìm điểm chung.",
       actions: ["Chọn một người bạn trong danh sách để XPAY Twin bắt đầu phân tích."],
-      memory: "Nexa Memory chưa có dữ liệu hội thoại.",
+      memory: "XPAY Memory chưa có dữ liệu hội thoại.",
       safety: "AI không tự gửi tin nhắn và không thay đổi dữ liệu tài khoản.",
       opener: ""
     };
@@ -4058,8 +4060,8 @@ function buildAiTwinInsight() {
     : `Đây là kết nối mới. XPAY Twin sẽ ưu tiên lời chào ngắn, lịch sự và liên quan đến ${leadTopic}.`;
 
   const memory = messages.length
-    ? `Nexa Memory tạm ghi nhận: ${person.name} liên quan đến ${topicText}; tin gần nhất thuộc nhóm "${signal.intent}". Dữ liệu này chỉ dùng để gợi ý trong phiên hội thoại.`
-    : `Nexa Memory sẽ bắt đầu học từ sở thích công khai của bạn và ${person.name}: ${topicText}.`;
+    ? `XPAY Memory tạm ghi nhận: ${person.name} liên quan đến ${topicText}; tin gần nhất thuộc nhóm "${signal.intent}". Dữ liệu này chỉ dùng để gợi ý trong phiên hội thoại.`
+    : `XPAY Memory sẽ bắt đầu học từ sở thích công khai của bạn và ${person.name}: ${topicText}.`;
 
   const safetySignals = [];
   if (friendPhone(person)) safetySignals.push("đã có định danh số điện thoại trong danh bạ");
@@ -4712,7 +4714,7 @@ function renderJournals() {
       const reportButton = !canDelete
         ? `<button class="delete-journal-btn" type="button" data-report-journal="${escapeHtml(post.id)}">Báo cáo</button>`
         : "";
-      const authorName = escapeHtml(post.authorName || "Nexa User");
+      const authorName = escapeHtml(post.authorName || "XPAY User");
       const avatarStyle = post.avatarData ? `background-image:url('${escapeHtml(post.avatarData)}')` : "";
       const bodyText = post.text
         ? `<p>${escapeHtml(post.text)}</p>`
@@ -4721,7 +4723,7 @@ function renderJournals() {
         <article class="journal-post" data-id="${escapeHtml(post.id)}">
           <header>
             <div class="avatar avatar-me" style="${avatarStyle}">${
-              post.avatarData ? "" : escapeHtml(initials(post.authorName || "Nexa User"))
+              post.avatarData ? "" : escapeHtml(initials(post.authorName || "XPAY User"))
             }</div>
             <div>
               <strong>${authorName}</strong>
@@ -4911,7 +4913,7 @@ function friendPayload() {
     version: 2,
     app: "XPAY Chat",
     phone: accountPhone,
-    name: user.fullName || user.name || "Nexa User"
+    name: user.fullName || user.name || "XPAY User"
   });
 }
 
@@ -4994,7 +4996,7 @@ function renderFriendsDirectory() {
   const requestMarkup = [...incomingRequests, ...outgoingRequests]
     .map((request) => {
       const profile = request.profile || {};
-      const name = profile.fullName || profile.name || request.requesterPhone || request.targetPhone || "Nexa User";
+      const name = profile.fullName || profile.name || request.requesterPhone || request.targetPhone || "XPAY User";
       const incoming = request.direction === "incoming";
       return `
         <article class="person-row friends-directory-row friend-request-row">
@@ -5148,8 +5150,8 @@ function appAdminInfoItem(label, value) {
 }
 
 function appAdminAvatarMarkup(user = {}) {
-  const label = initials(user.fullName || user.name || "Nexa User");
-  if (user.avatarData) return `<div class="avatar"><img src="${escapeHtml(user.avatarData)}" alt="${escapeHtml(user.fullName || user.name || "Nexa User")}" /></div>`;
+  const label = initials(user.fullName || user.name || "XPAY User");
+  if (user.avatarData) return `<div class="avatar"><img src="${escapeHtml(user.avatarData)}" alt="${escapeHtml(user.fullName || user.name || "XPAY User")}" /></div>`;
   return `<div class="avatar">${escapeHtml(label)}</div>`;
 }
 
@@ -5170,7 +5172,7 @@ function renderAppAdminList() {
       <button class="app-admin-row ${user.accountPhone === appAdminSelectedPhone ? "active" : ""}" type="button" data-app-admin-phone="${escapeHtml(user.accountPhone)}">
         ${appAdminAvatarMarkup(user)}
         <div>
-          <strong>${escapeHtml(user.fullName || user.name || "Nexa User")}</strong>
+          <strong>${escapeHtml(user.fullName || user.name || "XPAY User")}</strong>
           <span>${escapeHtml(user.phone || user.accountPhone)} • ${escapeHtml(user.presenceOnline ? "Online" : "Offline")}</span>
         </div>
         <small>${escapeHtml(appAdminBadgeText(user))}</small>
@@ -5224,7 +5226,7 @@ function renderAppAdminBusinesses() {
       return `
         <article class="app-admin-business-card" data-business-owner="${escapeHtml(normalized.ownerPhone)}">
           <div>
-            <strong>${escapeHtml(normalized.name || "Doanh nghiệp Nexa")}</strong>
+            <strong>${escapeHtml(normalized.name || "Doanh nghiệp XPAY")}</strong>
             <span>${escapeHtml(normalized.category)} • ${escapeHtml(normalized.ownerPhone)} • ${escapeHtml(normalized.statusLabel)}</span>
             <p>${escapeHtml(normalized.description || "Chưa có mô tả")}</p>
             ${normalized.offer ? `<small>Ưu đãi: ${escapeHtml(normalized.offer)}</small>` : ""}
@@ -5262,7 +5264,7 @@ function renderAppAdminDetail(user) {
   appAdminDetail.innerHTML = `
     <div class="app-admin-profile">
       ${appAdminAvatarMarkup(user)}
-      <h3>${escapeHtml(user.fullName || user.name || "Nexa User")}</h3>
+      <h3>${escapeHtml(user.fullName || user.name || "XPAY User")}</h3>
       <span>${escapeHtml(user.accountPhone)} • ${escapeHtml(appAdminBadgeText(user))}</span>
     </div>
     <div class="info-list">
@@ -5509,7 +5511,7 @@ function closeFriendModal() {
 
 function renderMyQr() {
   const user = currentUser || {};
-  qrOwnerName.textContent = user.fullName || user.name || "Nexa User";
+  qrOwnerName.textContent = user.fullName || user.name || "XPAY User";
   const accountPhone = currentAccountPhone(user);
   qrOwnerPhone.textContent = accountPhone || "Chưa có số điện thoại";
 
@@ -5663,7 +5665,7 @@ function readQrContact(value) {
     try {
       const url = new URL(rawValue);
       const phone = normalizePhone(url.searchParams.get("phone") || url.searchParams.get("p") || "");
-      if ((url.protocol === "xpaychat:" || /asean-vietnam\.online$/i.test(url.hostname)) && phone) {
+      if ((url.protocol === "xpaychat:" || /gatewayxpay\.com$/i.test(url.hostname)) && phone) {
         return {
           phone,
           name: url.searchParams.get("name") || ""
@@ -7909,7 +7911,7 @@ journalForm.addEventListener("submit", async (event) => {
 
   const post = {
     id: `journal-${Date.now()}`,
-    authorName: currentUser?.fullName || currentUser?.name || "Nexa User",
+    authorName: currentUser?.fullName || currentUser?.name || "XPAY User",
     authorPhone: currentUser?.phone || "",
     avatarData: currentUser?.avatarData || "",
     text,

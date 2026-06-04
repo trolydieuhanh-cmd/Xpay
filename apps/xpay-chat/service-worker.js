@@ -8,14 +8,14 @@ const APP_SHELL = [
   "./terms.html",
   "./manifest.webmanifest",
   "./robots.txt",
-  "./assets/asean-holding-logo-cropped.png",
+  "./assets/xpay-logo.svg",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   "./assets/apple-touch-icon.png",
   "./vendor/qrious.min.js",
   "./vendor/jsQR.js"
 ];
-const CACHE_PATHS = new Set(["/", "/index.html", "/styles.css", "/app.js", "/privacy.html", "/terms.html", "/manifest.webmanifest", "/robots.txt", "/assets/asean-holding-logo-cropped.png", "/assets/icon-192.png", "/assets/icon-512.png", "/assets/apple-touch-icon.png", "/vendor/qrious.min.js", "/vendor/jsQR.js"]);
+const CACHE_PATHS = new Set(["/", "/index.html", "/styles.css", "/app.js", "/privacy.html", "/terms.html", "/manifest.webmanifest", "/robots.txt", "/assets/xpay-logo.svg", "/assets/icon-192.png", "/assets/icon-512.png", "/assets/apple-touch-icon.png", "/vendor/qrious.min.js", "/vendor/jsQR.js"]);
 
 function shouldCache(request) {
   const url = new URL(request.url);
