@@ -22,6 +22,7 @@
         <button class="primary-btn full" type="submit">Đăng nhập</button>
         <p class="form-status" id="chatStatus"></p>
       </form>
+      <button class="secondary-btn full" id="chatLogout" type="button" hidden>Đăng xuất</button>
       <form class="change-password-panel" id="changePasswordForm" hidden>
         <h2>Đổi mật khẩu lần đầu</h2>
         <label>Mật khẩu hiện tại
@@ -40,19 +41,25 @@
           <strong>XPAY Chat</strong>
           <span id="licenseState">Chưa đăng nhập</span>
         </div>
-        <div class="message-list">
-          <article class="message other">Chào mừng đến XPAY Chat. License được đồng bộ từ gatewayxpay.com.</article>
-          <article class="message mine">Sau khi admin kích hoạt, tài khoản dùng đúng thời hạn đã mua.</article>
-          <article class="message other">Hệ thống sẽ yêu cầu đổi mật khẩu lần đầu để bảo mật.</article>
+        <div class="active-chat-title" id="activeChatTitle">Cổng license XPAY</div>
+        <div class="message-list" id="messageList" aria-live="polite">
+          <article class="message other">Đăng nhập để mở workspace XPAY Chat.</article>
         </div>
-        <div class="chat-input-bar">
-          <span>Nhắn tin...</span>
-          <button aria-label="Gửi"><svg viewBox="0 0 24 24"><path d="m4 12 16-8-6 16-3-7-7-1Z"/></svg></button>
-        </div>
+        <form class="chat-input-bar" id="chatMessageForm">
+          <input name="text" placeholder="Nhắn tin..." autocomplete="off" disabled>
+          <button aria-label="Gửi tin nhắn" disabled><svg viewBox="0 0 24 24"><path d="m4 12 16-8-6 16-3-7-7-1Z"/></svg></button>
+        </form>
       </div>
       <aside class="license-panel" id="licensePanel">
         <h2>Thông tin license</h2>
         <p>Đăng nhập để xem trạng thái gói, ngày kích hoạt và ngày hết hạn.</p>
+      </aside>
+      <aside class="conversation-panel" id="conversationPanel" hidden>
+        <div class="conversation-head">
+          <h2>Hội thoại</h2>
+          <button class="icon-button" id="newConversationButton" type="button" aria-label="Tạo hội thoại mới" title="Tạo hội thoại mới">+</button>
+        </div>
+        <div class="conversation-list" id="conversationList"></div>
       </aside>
     </section>
   </main>

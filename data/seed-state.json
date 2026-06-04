@@ -99,5 +99,7 @@
   "customers": [],
   "sessions": [],
   "adminSessions": [],
+  "conversations": [],
+  "messages": [],
   "audit": []
 }

@@ -54,11 +54,18 @@ function ensureStateFile() {
 
 function readState() {
   ensureStateFile();
-  return JSON.parse(fs.readFileSync(STATE_FILE, "utf8"));
+  return normalizeState(JSON.parse(fs.readFileSync(STATE_FILE, "utf8")));
 }
 
 function writeState(state) {
   fs.writeFileSync(STATE_FILE, `${JSON.stringify(state, null, 2)}\n`);
+}
+
+function normalizeState(state) {
+  for (const key of ["orders", "customers", "sessions", "adminSessions", "audit", "conversations", "messages"]) {
+    if (!Array.isArray(state[key])) state[key] = [];
+  }
+  return state;
 }
 
 function nowIso() {
@@ -459,6 +466,116 @@ function customerLicense(customer) {
   };
 }
 
+function chatAccess(customer) {
+  const license = customerLicense(customer);
+  if (license.status !== "active") {
+    return { license, status: 403, error: `Tài khoản đang ở trạng thái ${license.status}. Vui lòng liên hệ Admin XPAY.` };
+  }
+  if (license.mustChangePassword) {
+    return { license, status: 428, error: "Vui lòng đổi mật khẩu lần đầu trước khi sử dụng XPAY Chat." };
+  }
+  return { license };
+}
+
+function customerConversations(state, customer) {
+  return state.conversations
+    .filter((conversation) => conversation.customerId === customer.id)
+    .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime());
+}
+
+function conversationMessages(state, conversationId) {
+  return state.messages
+    .filter((message) => message.conversationId === conversationId)
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
+
+function chatMessageView(message) {
+  return {
+    id: message.id,
+    conversationId: message.conversationId,
+    authorType: message.authorType,
+    authorName: message.authorName,
+    text: message.text,
+    createdAt: message.createdAt
+  };
+}
+
+function chatConversationView(state, conversation) {
+  const messages = conversationMessages(state, conversation.id);
+  const lastMessage = messages[messages.length - 1] || null;
+  return {
+    id: conversation.id,
+    title: conversation.title,
+    channel: conversation.channel,
+    status: conversation.status,
+    unread: Number(conversation.unread || 0),
+    lastMessage: lastMessage ? lastMessage.text : "",
+    lastMessageAt: lastMessage ? lastMessage.createdAt : conversation.updatedAt,
+    createdAt: conversation.createdAt,
+    updatedAt: conversation.updatedAt
+  };
+}
+
+function appendChatMessage(state, conversation, authorType, authorName, text) {
+  const message = {
+    id: id("MSG"),
+    customerId: conversation.customerId,
+    conversationId: conversation.id,
+    authorType,
+    authorName,
+    text: String(text || "").trim().slice(0, 2000),
+    createdAt: nowIso()
+  };
+  state.messages.push(message);
+  conversation.updatedAt = message.createdAt;
+  conversation.lastMessageId = message.id;
+  return message;
+}
+
+function ensureDefaultConversation(state, customer) {
+  let conversation = customerConversations(state, customer)[0];
+  if (conversation) return conversation;
+  conversation = {
+    id: id("CHAT"),
+    customerId: customer.id,
+    title: "XPAY Support",
+    channel: "support",
+    status: "active",
+    unread: 0,
+    createdAt: nowIso(),
+    updatedAt: nowIso()
+  };
+  state.conversations.unshift(conversation);
+  appendChatMessage(state, conversation, "system", "XPAY License", `License ${customer.planName} đã sẵn sàng cho ${customer.productName}.`);
+  appendChatMessage(state, conversation, "agent", "XPAY Support", `Chào ${customer.name}, XPAY Chat đã được kích hoạt. Anh/chị có thể gửi tin nhắn, tạo hội thoại và theo dõi thời hạn sử dụng ngay tại đây.`);
+  return conversation;
+}
+
+function buildChatWorkspace(state, customer, requestedConversationId = "") {
+  ensureDefaultConversation(state, customer);
+  const conversations = customerConversations(state, customer);
+  const activeConversation = conversations.find((conversation) => conversation.id === requestedConversationId) || conversations[0];
+  return {
+    conversations: conversations.map((conversation) => chatConversationView(state, conversation)),
+    activeConversationId: activeConversation ? activeConversation.id : "",
+    messages: activeConversation ? conversationMessages(state, activeConversation.id).map(chatMessageView) : []
+  };
+}
+
+function supportAutoReply(text) {
+  const lower = String(text || "").toLowerCase();
+  if (lower.includes("gia hạn") || lower.includes("hết hạn")) {
+    return "XPAY đã ghi nhận yêu cầu gia hạn. Admin sẽ kiểm tra license và phản hồi trên cùng hội thoại này.";
+  }
+  if (lower.includes("thanh toán") || lower.includes("qr") || lower.includes("chuyển khoản")) {
+    return "Anh/chị có thể tạo mã QR thanh toán tại gatewayxpay.com. Nội dung chuyển khoản cần giữ đúng mã giao dịch để Admin kích hoạt nhanh.";
+  }
+  if (lower.includes("lỗi") || lower.includes("không dùng") || lower.includes("không sử dụng")) {
+    return "XPAY đã nhận thông tin lỗi. Anh/chị mô tả thêm thiết bị, trình duyệt và thao tác trước khi lỗi xảy ra để đội hỗ trợ xử lý nhanh hơn.";
+  }
+  return "XPAY đã nhận tin nhắn. Bộ phận hỗ trợ sẽ tiếp tục theo dõi hội thoại này.";
+}
+
 async function handleApi(req, res, url) {
   const state = readState();
   const method = req.method || "GET";
@@ -669,6 +786,81 @@ async function handleApi(req, res, url) {
       return sendJson(res, 200, { customer: customerView(auth.customer), license: customerLicense(auth.customer) });
     }
 
+    if (url.pathname.startsWith("/api/chat")) {
+      const auth = authenticateCustomer(req, state);
+      if (!auth) return sendJson(res, 401, { error: "Vui lòng đăng nhập." });
+      const access = chatAccess(auth.customer);
+      if (access.error) {
+        writeState(state);
+        return sendJson(res, access.status, {
+          error: access.error,
+          customer: customerView(auth.customer),
+          license: access.license
+        });
+      }
+
+      if (method === "GET" && url.pathname === "/api/chat/workspace") {
+        const workspace = buildChatWorkspace(state, auth.customer, url.searchParams.get("conversationId") || "");
+        writeState(state);
+        return sendJson(res, 200, {
+          customer: customerView(auth.customer),
+          license: access.license,
+          ...workspace
+        });
+      }
+
+      if (method === "POST" && url.pathname === "/api/chat/conversations") {
+        const body = await requireJson(req);
+        const title = String(body.title || "Hội thoại mới").trim().slice(0, 80) || "Hội thoại mới";
+        const conversation = {
+          id: id("CHAT"),
+          customerId: auth.customer.id,
+          title,
+          channel: "direct",
+          status: "active",
+          unread: 0,
+          createdAt: nowIso(),
+          updatedAt: nowIso()
+        };
+        state.conversations.unshift(conversation);
+        appendChatMessage(state, conversation, "system", "XPAY Chat", "Hội thoại mới đã được tạo.");
+        audit(state, auth.customer.id, "chat.conversation.created", { conversationId: conversation.id });
+        const workspace = buildChatWorkspace(state, auth.customer, conversation.id);
+        writeState(state);
+        emit("chat.conversation.created", { customerId: auth.customer.id, conversationId: conversation.id });
+        return sendJson(res, 201, {
+          customer: customerView(auth.customer),
+          license: access.license,
+          conversation: chatConversationView(state, conversation),
+          ...workspace
+        });
+      }
+
+      if (method === "POST" && url.pathname === "/api/chat/messages") {
+        const body = await requireJson(req);
+        const text = String(body.text || "").trim();
+        if (!text) return sendJson(res, 400, { error: "Vui lòng nhập nội dung tin nhắn." });
+        if (text.length > 2000) return sendJson(res, 400, { error: "Tin nhắn tối đa 2.000 ký tự." });
+        ensureDefaultConversation(state, auth.customer);
+        const conversation = state.conversations.find((item) => item.id === body.conversationId && item.customerId === auth.customer.id);
+        if (!conversation) return sendJson(res, 404, { error: "Không tìm thấy hội thoại." });
+        const customerMessage = appendChatMessage(state, conversation, "customer", auth.customer.name, text);
+        const reply = appendChatMessage(state, conversation, "agent", "XPAY Support", supportAutoReply(text));
+        audit(state, auth.customer.id, "chat.message.sent", { conversationId: conversation.id, messageId: customerMessage.id });
+        const workspace = buildChatWorkspace(state, auth.customer, conversation.id);
+        writeState(state);
+        emit("chat.message.sent", { customerId: auth.customer.id, conversationId: conversation.id });
+        return sendJson(res, 201, {
+          customer: customerView(auth.customer),
+          license: access.license,
+          newMessages: [chatMessageView(customerMessage), chatMessageView(reply)],
+          ...workspace
+        });
+      }
+
+      return sendJson(res, 404, { error: "Không tìm thấy API chat." });
+    }
+
     if (method === "GET" && url.pathname === "/api/me") {
       const auth = authenticateCustomer(req, state);
       if (!auth) return sendJson(res, 401, { error: "Vui lòng đăng nhập." });
@@ -735,9 +927,10 @@ function serveStatic(req, res, url) {
     ".jpeg": "image/jpeg",
     ".webmanifest": "application/manifest+json"
   }[ext] || "application/octet-stream";
+  const noStore = [".html", ".css", ".js"].includes(ext);
   res.writeHead(200, {
     "Content-Type": type,
-    "Cache-Control": ext === ".html" ? "no-store" : "public, max-age=3600"
+    "Cache-Control": noStore ? "no-store" : "public, max-age=3600"
   });
   fs.createReadStream(filePath).pipe(res);
 }
