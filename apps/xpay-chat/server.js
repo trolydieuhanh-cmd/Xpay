@@ -9651,7 +9651,13 @@ async function handleApi(request, response) {
     const friendPhone = normalizePhone(body.friendPhone);
     if (!friendPhone) return json(response, 400, { message: "Số điện thoại không hợp lệ." });
     const conversation = getConversation(db, session.phone, friendPhone);
-    if (!conversation) return json(response, 200, { ok: true, deleted: 0 });
+    if (!conversation) {
+      if (body.hide !== false) {
+        Object.assign(session.user, withHiddenChats(session.user, [...hiddenChatsForUser(session.user), friendPhone]));
+        await saveDb(db);
+      }
+      return json(response, 200, { ok: true, deleted: 0, hiddenChats: hiddenChatsForUser(session.user) });
+    }
     let deleted = 0;
     (conversation.messages || []).forEach((message) => {
       if (![message.fromPhone, message.toPhone].includes(session.phone)) return;

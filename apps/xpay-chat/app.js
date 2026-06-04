@@ -84,11 +84,13 @@ const pushTokenStorageKey = "xpaychat.pushToken";
 const pushDeviceIdStorageKey = "xpaychat.pushDeviceId";
 const uiThemeKey = "xpaychat.uiTheme";
 const hiddenChatsKey = "xpaychat.hiddenChats";
+const hiddenChatMetaKey = "xpaychat.hiddenChatsMeta";
 const aiAssistantResetKey = "xpaychat.aiAssistantReset";
 const appVersion = "1.0.0-store-rc1";
 const productionOrigin = "https://gatewayxpay.com";
 const apiBasePath = String(window.XPAY_CHAT_API_BASE || (location.pathname.startsWith("/chat-app") ? "/chat-api" : "")).replace(/\/+$/, "");
 const messageReactionOptions = ["❤️", "👍", "😂", "😮", "😢", "🙏"];
+const hiddenChatSyncGraceMs = 5 * 60 * 1000;
 
 const authScreen = document.querySelector("#authScreen");
 const chatApp = document.querySelector("#chatApp");
@@ -304,6 +306,7 @@ let aiServerState = loadAiServerState();
 let appSettings = loadAppSettings();
 let unreadState = loadUnreadState();
 let hiddenChatMap = loadHiddenChatMap();
+let hiddenChatMetaMap = loadHiddenChatMetaMap();
 let nearbyPeople = [];
 let activeId = people[0]?.id || "";
 let currentFilter = "";
@@ -1109,6 +1112,42 @@ function saveHiddenChatMap() {
   safeSetItem(hiddenChatsKey, JSON.stringify(hiddenChatMap));
 }
 
+function loadHiddenChatMetaMap() {
+  const saved = localStorage.getItem(hiddenChatMetaKey);
+  if (!saved) return {};
+
+  try {
+    const parsed = JSON.parse(saved);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed)
+        .map(([ownerPhone, phones]) => {
+          const cleanOwner = normalizePhone(ownerPhone);
+          const phoneMeta = phones && typeof phones === "object" && !Array.isArray(phones) ? phones : {};
+          const normalizedPhones = Object.fromEntries(
+            Object.entries(phoneMeta)
+              .map(([phone, meta]) => {
+                const cleanPhone = normalizePhone(phone);
+                const hiddenAt = Number(meta?.hiddenAt || meta || 0);
+                return cleanPhone && Number.isFinite(hiddenAt) && hiddenAt > 0
+                  ? [cleanPhone, { hiddenAt }]
+                  : null;
+              })
+              .filter(Boolean)
+          );
+          return cleanOwner ? [cleanOwner, normalizedPhones] : null;
+        })
+        .filter(Boolean)
+    );
+  } catch {
+    return {};
+  }
+}
+
+function saveHiddenChatMetaMap() {
+  safeSetItem(hiddenChatMetaKey, JSON.stringify(hiddenChatMetaMap));
+}
+
 function loadUnreadState() {
   const defaults = { conversations: {} };
   const saved = localStorage.getItem(unreadStateKey);
@@ -1855,6 +1894,63 @@ function hiddenChatSetForUser(user = currentUser) {
   return new Set(hiddenChatListForUser(user));
 }
 
+function hiddenChatMetaForOwner(ownerPhone = hiddenChatOwnerPhone()) {
+  const cleanOwner = normalizePhone(ownerPhone) || "local";
+  if (!hiddenChatMetaMap[cleanOwner] || typeof hiddenChatMetaMap[cleanOwner] !== "object") {
+    hiddenChatMetaMap[cleanOwner] = {};
+  }
+  return hiddenChatMetaMap[cleanOwner];
+}
+
+function rememberHiddenChatState(phone, hidden, ownerPhone = hiddenChatOwnerPhone()) {
+  const cleanPhone = normalizePhone(phone);
+  if (!cleanPhone) return;
+  const meta = hiddenChatMetaForOwner(ownerPhone);
+  if (hidden) meta[cleanPhone] = { hiddenAt: Date.now() };
+  else delete meta[cleanPhone];
+  saveHiddenChatMetaMap();
+}
+
+function hiddenChatHiddenAt(phone, user = currentUser) {
+  const cleanPhone = normalizePhone(phone);
+  const ownerPhone = hiddenChatOwnerPhone(user);
+  const meta = hiddenChatMetaForOwner(ownerPhone)[cleanPhone];
+  const hiddenAt = Number(meta?.hiddenAt || 0);
+  return Number.isFinite(hiddenAt) ? hiddenAt : 0;
+}
+
+function mergeServerHiddenChats(ownerPhone, serverHiddenChats = []) {
+  const cleanOwner = normalizePhone(ownerPhone) || "local";
+  const merged = new Set(normalizePhoneList(serverHiddenChats));
+  const meta = hiddenChatMetaForOwner(cleanOwner);
+  const now = Date.now();
+
+  Object.entries(meta).forEach(([phone, entry]) => {
+    const hiddenAt = Number(entry?.hiddenAt || 0);
+    if (hiddenAt && now - hiddenAt <= hiddenChatSyncGraceMs) {
+      merged.add(phone);
+      return;
+    }
+    if (!merged.has(phone)) delete meta[phone];
+  });
+
+  saveHiddenChatMetaMap();
+  return [...merged];
+}
+
+function shouldRevealHiddenChatFromServer(phone, serverMessages = []) {
+  const cleanPhone = normalizePhone(phone);
+  if (!cleanPhone || !hiddenChatSetForUser().has(cleanPhone)) return false;
+  const hiddenAt = hiddenChatHiddenAt(cleanPhone);
+  if (!hiddenAt) return false;
+
+  return serverMessages.some((message) => {
+    if (!message || message.from === "me" || message.deleted || message.recalled) return false;
+    const createdAt = Date.parse(message.createdAt || "");
+    return Number.isFinite(createdAt) && createdAt > hiddenAt + 1000;
+  });
+}
+
 function isChatHidden(person) {
   const phone = friendPhone(person);
   return Boolean(phone && hiddenChatSetForUser().has(phone));
@@ -1868,8 +1964,12 @@ function setHiddenChatPhone(phone, hidden = true, options = {}) {
   const beforeSize = current.size;
   if (hidden) current.add(cleanPhone);
   else current.delete(cleanPhone);
-  if (current.size === beforeSize && current.has(cleanPhone) === hidden) return false;
+  if (current.size === beforeSize && current.has(cleanPhone) === hidden) {
+    rememberHiddenChatState(cleanPhone, hidden, ownerPhone);
+    return false;
+  }
   hiddenChatMap[ownerPhone] = [...current];
+  rememberHiddenChatState(cleanPhone, hidden, ownerPhone);
   saveHiddenChatMap();
   if (options.sync !== false && hasServerSession()) {
     apiRequest("/api/conversations/hidden/update", { hiddenChats: hiddenChatMap[ownerPhone] }).catch(() => undefined);
@@ -1880,7 +1980,7 @@ function setHiddenChatPhone(phone, hidden = true, options = {}) {
 function syncHiddenChatsFromUser(user = currentUser) {
   if (!user || !Array.isArray(user.hiddenChats)) return;
   const ownerPhone = hiddenChatOwnerPhone(user);
-  hiddenChatMap[ownerPhone] = normalizePhoneList(user.hiddenChats);
+  hiddenChatMap[ownerPhone] = mergeServerHiddenChats(ownerPhone, user.hiddenChats);
   saveHiddenChatMap();
 }
 
@@ -2112,7 +2212,9 @@ function applyServerConversations(conversations = [], options = {}) {
     conversations.map((conversation) => [normalizePhone(conversation.friendPhone || ""), conversation.messages || []])
   );
   messagesByPhone.forEach((serverMessages, phone) => {
-    if (serverMessages.length) setHiddenChatPhone(phone, false);
+    if (serverMessages.length && shouldRevealHiddenChatFromServer(phone, serverMessages)) {
+      setHiddenChatPhone(phone, false);
+    }
   });
 
   people = people.map((person) => {
