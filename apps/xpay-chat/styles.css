@@ -2768,6 +2768,17 @@ textarea:focus {
   width: min(520px, 100%);
 }
 
+.force-password-card {
+  width: min(520px, 100%);
+}
+
+.force-password-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
 .app-admin-card {
   width: min(960px, 100%);
   max-height: min(760px, calc(100vh - 36px));

@@ -88,7 +88,6 @@
           </div>
           <nav class="auth-tabs" aria-label="Tài khoản">
             <button class="auth-tab active" type="button" data-auth-mode="login">Đăng nhập</button>
-            <button class="auth-tab" type="button" data-auth-mode="register">Đăng ký</button>
             <button class="auth-tab" type="button" data-auth-mode="forgot">Quên mật khẩu</button>
           </nav>
           <label>
@@ -122,7 +121,7 @@
             <button class="primary-btn" id="authSubmitBtn" type="submit">Đăng nhập</button>
             <button class="secondary-btn hidden" id="resendOtpBtn" type="button">Gửi lại mã</button>
           </div>
-          <p class="auth-status" id="authStatus">Đăng nhập bằng số điện thoại và mật khẩu đã đăng ký.</p>
+          <p class="auth-status" id="authStatus">Đăng nhập bằng số điện thoại và mật khẩu được Admin XPAY cấp sau khi kích hoạt gói dịch vụ.</p>
           <p class="fine-print">
             <span id="otpEmailNoticeText">OTP email sẽ được gửi duy nhất từ Email: admin@gatewayxpay.com</span>
             <a id="privacyPolicyLink" href="privacy.html" target="_blank" rel="noopener">Chính sách quyền riêng tư</a>
@@ -958,6 +957,42 @@
                 </label>
                 <button class="danger-btn" type="submit">Xoá vĩnh viễn tài khoản</button>
                 <p class="settings-status" id="accountDeleteStatus">Chỉ chủ tài khoản đã đăng nhập mới có thể thực hiện thao tác này.</p>
+              </section>
+            </div>
+          </form>
+        </section>
+
+        <section class="info-overlay hidden" id="forcePasswordOverlay" aria-live="polite">
+          <form class="info-card force-password-card" id="forcePasswordForm">
+            <header class="friend-header">
+              <div>
+                <p class="eyebrow">Bảo mật tài khoản</p>
+                <h2>Đổi mật khẩu lần đầu</h2>
+              </div>
+            </header>
+            <div class="settings-body">
+              <section class="settings-section">
+                <div class="settings-title">
+                  <strong>Tài khoản đã được Admin XPAY kích hoạt</strong>
+                  <span>Vui lòng đổi mật khẩu hệ thống cấp sang mật khẩu riêng trước khi sử dụng XPAY Chat.</span>
+                </div>
+                <label>
+                  <span>Mật khẩu hiện tại</span>
+                  <input id="forceCurrentPasswordInput" type="password" autocomplete="current-password" required />
+                </label>
+                <label>
+                  <span>Mật khẩu mới</span>
+                  <input id="forceNewPasswordInput" type="password" autocomplete="new-password" required />
+                </label>
+                <label>
+                  <span>Nhập lại mật khẩu mới</span>
+                  <input id="forceConfirmPasswordInput" type="password" autocomplete="new-password" required />
+                </label>
+                <div class="force-password-actions">
+                  <button class="primary-btn" type="submit">Đổi mật khẩu và vào XPAY Chat</button>
+                  <button class="secondary-btn" id="forcePasswordLogoutBtn" type="button">Đăng xuất</button>
+                </div>
+                <p class="settings-status" id="forcePasswordStatus">Mật khẩu mới cần có chữ hoa, số và ký tự đặc biệt.</p>
               </section>
             </div>
           </form>

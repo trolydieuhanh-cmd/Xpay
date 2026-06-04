@@ -37,6 +37,7 @@ const APP_ADMIN_PHONES = String(process.env.APP_ADMIN_PHONES || APP_ADMIN_PHONE 
 const APP_ADMIN_ROLE = "app_admin";
 const ADMIN_ROLE_NAMES = new Set([APP_ADMIN_ROLE, "moderator", "support"]);
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+const XPAY_CHAT_SYNC_TOKEN = process.env.XPAY_CHAT_SYNC_TOKEN || "";
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.hostinger.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
 const SMTP_SECURE = process.env.SMTP_SECURE !== "0";
@@ -389,6 +390,77 @@ function normalizeProfile(profile = {}, phone = "") {
   };
 }
 
+function normalizeLicense(license = {}) {
+  const status = String(license.status || license.licenseStatus || "").trim().toLowerCase();
+  const allowedStatus = new Set(["pending", "active", "suspended", "expired", "cancelled"]);
+  const lifetime = Boolean(license.lifetime || license.durationDays === null);
+  return {
+    source: "gatewayxpay",
+    customerId: String(license.customerId || license.id || "").trim(),
+    productId: String(license.productId || "xpay-chat").trim(),
+    productName: String(license.productName || "XPAY Chat").trim(),
+    planId: String(license.planId || "").trim(),
+    planName: String(license.planName || "").trim(),
+    status: allowedStatus.has(status) ? status : "pending",
+    startsAt: timestampOrNull(license.startsAt) || "",
+    expiresAt: lifetime ? "" : timestampOrNull(license.expiresAt) || "",
+    lifetime,
+    mustChangePassword: Boolean(license.mustChangePassword),
+    updatedAt: timestampOrNull(license.updatedAt) || new Date().toISOString()
+  };
+}
+
+function userLicense(user = {}) {
+  if (!user || typeof user !== "object") return null;
+  const source = user.license || user.profile?.license || null;
+  if (!source || typeof source !== "object") return null;
+  const license = normalizeLicense(source);
+  const expired = !license.lifetime && license.expiresAt && new Date(license.expiresAt).getTime() < Date.now();
+  return {
+    ...license,
+    status: expired && license.status === "active" ? "expired" : license.status,
+    daysRemaining: license.lifetime || !license.expiresAt
+      ? null
+      : Math.max(0, Math.ceil((new Date(license.expiresAt).getTime() - Date.now()) / 86400000))
+  };
+}
+
+function licenseAccessError(user = {}, options = {}) {
+  const license = userLicense(user);
+  if (!license) {
+    return {
+      status: 403,
+      message: "Tài khoản chưa được Admin XPAY cấp gói dịch vụ. Vui lòng đăng ký gói và thanh toán trên gatewayxpay.com."
+    };
+  }
+  if (license.status !== "active") {
+    return {
+      status: 403,
+      message: `Gói dịch vụ XPAY Chat đang ở trạng thái ${license.status}. Vui lòng liên hệ Admin XPAY.`,
+      license
+    };
+  }
+  if (!options.allowMustChangePassword && license.mustChangePassword) {
+    return {
+      status: 428,
+      message: "Vui lòng đổi mật khẩu lần đầu trước khi sử dụng XPAY Chat.",
+      license
+    };
+  }
+  return null;
+}
+
+function applyLicenseToUser(user = {}, license = {}) {
+  const normalized = normalizeLicense(license);
+  const profile = normalizeProfile(user.profile || {}, user.phone || normalized.phone || "");
+  profile.license = normalized;
+  return {
+    ...user,
+    license: normalized,
+    profile
+  };
+}
+
 function normalizeAccountBadges(value = {}) {
   const source = value && typeof value === "object" ? value : {};
   return {
@@ -468,6 +540,7 @@ function publicProfile(user, isOwner = false) {
   const presence = normalizePresence(user.presence || {});
   const online = isPresenceOnline(user);
   const referral = referralState(user);
+  const license = userLicense(user);
   return {
     accountPhone: user.phone,
     phone: isOwner || privacy.phone ? profile.phone : "",
@@ -486,6 +559,7 @@ function publicProfile(user, isOwner = false) {
     presenceStatus: online ? "Online" : "Offline",
     lastSeenAt: presence.lastSeenAt || "",
     hiddenChats: isOwner ? hiddenChatsForUser(user) : [],
+    license: isOwner ? license : undefined,
     referralPoints: isOwner ? referral.points : 0,
     referral: isOwner ? referral : undefined,
     blockedByMe: Boolean(user.blockedByMe),
@@ -506,8 +580,8 @@ function referralState(user = {}) {
     webDownloadUrl: "",
     installGuide: [
       "1. Mở XPAY Chat bằng trình duyệt hoặc ứng dụng chính thức.",
-      "2. Đăng ký tài khoản bằng số điện thoại, email và OTP.",
-      "3. Sau khi xác minh, hai bên có thể kết bạn và dùng XPAY Chat."
+      "2. Chọn gói dịch vụ trên gatewayxpay.com và thanh toán QR.",
+      "3. Sau khi Admin kích hoạt, dùng số điện thoại và mật khẩu được cấp để đăng nhập XPAY Chat."
     ],
     shareText: [
       "Mời bạn tham gia XPAY Chat qua link giới thiệu của tôi:",
@@ -515,8 +589,8 @@ function referralState(user = {}) {
       "",
       "Hướng dẫn:",
       "1. Mở XPAY Chat bằng trình duyệt hoặc ứng dụng chính thức.",
-      "2. Đăng ký tài khoản bằng số điện thoại, email và OTP.",
-      "3. Sau khi xác minh, hai bên có thể kết bạn và dùng XPAY Chat."
+      "2. Chọn gói dịch vụ tại gatewayxpay.com và thanh toán QR.",
+      "3. Sau khi Admin XPAY kích hoạt, dùng số điện thoại và mật khẩu được cấp để đăng nhập."
     ].join("\n"),
     verifiedEligible: points >= 100,
     vipEligible: points >= 1000
@@ -3231,7 +3305,7 @@ function pgUserFromRow(row, friends = []) {
   if (!row) return null;
   const raw = row.raw || {};
   const phone = normalizePhone(row.phone || raw.phone);
-  return {
+  const user = {
     ...raw,
     phone,
     passwordSalt: row.password_salt || raw.passwordSalt || "",
@@ -3243,6 +3317,8 @@ function pgUserFromRow(row, friends = []) {
     createdAt: isoFromDb(row.created_at) || raw.createdAt || "",
     updatedAt: isoFromDb(row.updated_at) || raw.updatedAt || ""
   };
+  const license = raw.license || raw.profile?.license || user.profile?.license || null;
+  return license ? applyLicenseToUser(user, license) : user;
 }
 
 function pgMessageFromRow(row) {
@@ -3607,6 +3683,152 @@ async function pgSessionPayload(client, token, user) {
     friends: friends.map((friend) => publicProfile(friend)),
     ai: await pgAiState(client, user.phone)
   };
+}
+
+function authorizeInternalSync(request, response) {
+  if (!XPAY_CHAT_SYNC_TOKEN) {
+    json(response, 503, { message: "Chưa cấu hình token đồng bộ nội bộ XPAY Chat." });
+    return false;
+  }
+  const header = request.headers.authorization || "";
+  const token = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
+  if (!token || !safeEqual(token, XPAY_CHAT_SYNC_TOKEN)) {
+    json(response, 401, { message: "Không có quyền đồng bộ XPAY Chat." });
+    return false;
+  }
+  return true;
+}
+
+function gatewayLicenseInput(body = {}) {
+  const customer = body.customer && typeof body.customer === "object" ? body.customer : {};
+  const phone = normalizePhone(customer.phone || body.phone || "");
+  const email = normalizeEmail(customer.email || body.email || "");
+  const name = truncateServerText(customer.name || body.name || `XPAY ${phone.slice(-4)}`, 90);
+  const now = new Date().toISOString();
+  const forceMustChangePassword = Boolean(body.password) || String(body.action || "") === "activate";
+  return {
+    phone,
+    email,
+    name,
+    password: String(body.password || ""),
+    forceMustChangePassword,
+    license: normalizeLicense({
+      customerId: customer.id || customer.customerId,
+      productId: customer.productId || "xpay-chat",
+      productName: customer.productName || "XPAY Chat",
+      planId: customer.planId,
+      planName: customer.planName,
+      status: customer.licenseStatus || customer.status,
+      startsAt: customer.startsAt,
+      expiresAt: customer.expiresAt,
+      lifetime: customer.lifetime,
+      mustChangePassword: forceMustChangePassword ? customer.mustChangePassword : false,
+      updatedAt: customer.updatedAt || now
+    })
+  };
+}
+
+function buildSyncedUser(existing = null, input = {}, passwordBox = null) {
+  const now = new Date().toISOString();
+  const existingLicense = userLicense(existing);
+  const license = {
+    ...input.license,
+    mustChangePassword: input.forceMustChangePassword
+      ? Boolean(input.license?.mustChangePassword)
+      : Boolean(existingLicense?.mustChangePassword)
+  };
+  const profile = normalizeProfile({
+    ...(existing?.profile || {}),
+    phone: input.phone,
+    name: input.name,
+    fullName: input.name,
+    email: input.email,
+    phoneVerified: true,
+    verifiedAt: existing?.profile?.verifiedAt || now
+  }, input.phone);
+  profile.license = license;
+  return applyLicenseToUser({
+    ...(existing || {}),
+    phone: input.phone,
+    passwordSalt: passwordBox?.salt || existing?.passwordSalt || "",
+    passwordHash: passwordBox?.hash || existing?.passwordHash || "",
+    profile,
+    friends: Array.isArray(existing?.friends) ? existing.friends : [],
+    presence: normalizePresence(existing?.presence || { mode: "offline" }),
+    location: existing?.location || {},
+    createdAt: existing?.createdAt || now,
+    updatedAt: now
+  }, license);
+}
+
+async function pgSyncGatewayLicense(client, body = {}) {
+  const input = gatewayLicenseInput(body);
+  if (!input.phone || !validEmail(input.email)) {
+    return { status: 400, message: "Thiếu số điện thoại hoặc email khách hàng hợp lệ." };
+  }
+  return pgWithIdentityLock(client, input.phone, input.email, async () => {
+    const existing = await pgUserByPhone(client, input.phone, true);
+    if (!existing && !input.password) {
+      return { status: 409, message: "Tài khoản XPAY Chat chưa tồn tại. Cần kích hoạt đơn có mật khẩu lần đầu." };
+    }
+    const emailOwner = await pgUserByEmail(client, input.email, false);
+    if (emailOwner && normalizePhone(emailOwner.phone) !== input.phone) {
+      return { status: 409, message: "Email này đã được sử dụng cho tài khoản XPAY Chat khác." };
+    }
+    const passwordBox = input.password ? await hashPasswordAsync(input.password) : null;
+    const user = buildSyncedUser(existing, input, passwordBox);
+    await client.query(
+      `INSERT INTO users (phone, password_salt, password_hash, profile, location, created_at, updated_at, raw)
+       VALUES ($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7, $8::jsonb)
+       ON CONFLICT (phone) DO UPDATE SET
+         password_salt = EXCLUDED.password_salt,
+         password_hash = EXCLUDED.password_hash,
+         profile = EXCLUDED.profile,
+         location = EXCLUDED.location,
+         updated_at = EXCLUDED.updated_at,
+         raw = EXCLUDED.raw`,
+      [
+        user.phone,
+        user.passwordSalt,
+        user.passwordHash,
+        JSON.stringify(user.profile),
+        JSON.stringify(user.location || {}),
+        user.createdAt,
+        user.updatedAt,
+        JSON.stringify(user)
+      ]
+    );
+    const license = userLicense(user);
+    if (input.password || license?.status !== "active") {
+      await client.query("DELETE FROM sessions WHERE phone = $1", [user.phone]);
+    }
+    return { status: 200, payload: { ok: true, user: await pgOwnerProfile(client, user), license } };
+  }, "gateway-license");
+}
+
+function jsonSyncGatewayLicense(db, body = {}) {
+  const input = gatewayLicenseInput(body);
+  if (!input.phone || !validEmail(input.email)) {
+    return { status: 400, message: "Thiếu số điện thoại hoặc email khách hàng hợp lệ." };
+  }
+  const existing = db.users[input.phone] || null;
+  if (!existing && !input.password) {
+    return { status: 409, message: "Tài khoản XPAY Chat chưa tồn tại. Cần kích hoạt đơn có mật khẩu lần đầu." };
+  }
+  const emailOwner = dbUserByEmail(db, input.email);
+  if (emailOwner && normalizePhone(emailOwner.phone) !== input.phone) {
+    return { status: 409, message: "Email này đã được sử dụng cho tài khoản XPAY Chat khác." };
+  }
+  const passwordBox = input.password ? hashPassword(input.password) : null;
+  const user = buildSyncedUser(existing, input, passwordBox);
+  db.users[input.phone] = user;
+  const license = userLicense(user);
+  if (input.password || license?.status !== "active") {
+    for (const [tokenHash, session] of Object.entries(db.sessions || {})) {
+      if (normalizePhone(session.phone) === input.phone) delete db.sessions[tokenHash];
+    }
+  }
+  return { status: 200, payload: { ok: true, user: jsonOwnerProfile(db, user), license } };
 }
 
 async function pgEnsureConversation(client, leftPhone, rightPhone, now = new Date().toISOString()) {
@@ -7132,6 +7354,12 @@ async function handlePostgresApi(request, response, body, route) {
       return json(response, 200, { reports: await pgReports(client, "") });
     }
 
+    if (route === "/api/internal/license/sync") {
+      if (!authorizeInternalSync(request, response)) return;
+      const result = await pgSyncGatewayLicense(client, body);
+      return json(response, result.status, result.payload || { message: result.message });
+    }
+
     if (route === "/api/auth/otp/request") {
       if (!smtpConfigured()) {
         return json(response, 503, { message: "OTP email đang tạm khóa để bảo mật. Vui lòng liên hệ quản trị viên." });
@@ -7140,6 +7368,9 @@ async function handlePostgresApi(request, response, body, route) {
       const email = normalizeEmail(body.email);
       const purpose = body.purpose === "forgot" ? "forgot" : "register";
       if (!phone || !validEmail(email)) return json(response, 400, { message: "Số điện thoại hoặc email không hợp lệ." });
+      if (purpose === "register") {
+        return json(response, 403, { message: "XPAY Chat không cho đăng ký trực tiếp. Vui lòng chọn gói dịch vụ và thanh toán tại gatewayxpay.com." });
+      }
       const user = await pgUserByPhone(client, phone, false);
       if (purpose === "register") {
         if (user) return json(response, 409, { message: "Số điện thoại này đã đăng ký." });
@@ -7163,6 +7394,7 @@ async function handlePostgresApi(request, response, body, route) {
     }
 
     if (route === "/api/auth/register") {
+      return json(response, 403, { message: "XPAY Chat không cho đăng ký trực tiếp. Tài khoản chỉ được tạo khi Admin XPAY kích hoạt gói dịch vụ." });
       const phone = normalizePhone(body.phone);
       const password = String(body.password || "");
       const name = String(body.name || "").trim();
@@ -7228,6 +7460,8 @@ async function handlePostgresApi(request, response, body, route) {
         recordLoginFailure(request, phone);
         return json(response, 401, { message: "Số điện thoại hoặc mật khẩu không đúng." });
       }
+      const loginBlock = licenseAccessError(user, { allowMustChangePassword: true });
+      if (loginBlock) return json(response, loginBlock.status, { message: loginBlock.message, license: loginBlock.license || userLicense(user) });
       clearLoginFailure(request, phone);
       await pgCleanupExpiredSessions(client);
       const token = createToken();
@@ -7267,13 +7501,17 @@ async function handlePostgresApi(request, response, body, route) {
         const passwordBox = await hashPasswordAsync(password);
         const now = new Date().toISOString();
         const profile = accountEmail ? normalizeProfile(user.profile, phone) : normalizeProfile({ ...user.profile, email }, phone);
-        const updatedUser = { ...user, passwordSalt: passwordBox.salt, passwordHash: passwordBox.hash, profile, updatedAt: now };
+        const nextLicense = userLicense(user)
+          ? normalizeLicense({ ...userLicense(user), mustChangePassword: false, updatedAt: now })
+          : null;
+        const updatedBase = { ...user, passwordSalt: passwordBox.salt, passwordHash: passwordBox.hash, profile, updatedAt: now };
+        const updatedUser = nextLicense ? applyLicenseToUser(updatedBase, nextLicense) : updatedBase;
         try {
           await client.query(
             `UPDATE users
              SET password_salt = $2, password_hash = $3, profile = $4::jsonb, updated_at = $5, raw = $6::jsonb
              WHERE phone = $1`,
-            [phone, passwordBox.salt, passwordBox.hash, JSON.stringify(profile), now, JSON.stringify(updatedUser)]
+            [phone, passwordBox.salt, passwordBox.hash, JSON.stringify(updatedUser.profile), now, JSON.stringify(updatedUser)]
           );
         } catch (error) {
           if (error.code === "23505") {
@@ -7288,16 +7526,47 @@ async function handlePostgresApi(request, response, body, route) {
     const session = await pgRequireUser(request, client);
     if (!session) return json(response, 401, { message: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại." });
 
-    if (route === "/api/session/restore") {
-      return json(response, 200, await pgSessionPayload(client, session.token, session.user));
-    }
-
     if (route === "/api/session/logout") {
       await pgDisablePushToken(client, session.phone, body.token || "", body.deviceId || "");
       await client.query("DELETE FROM sessions WHERE token_hash = $1", [hashSessionToken(session.token)]);
       await pgSaveUserPresence(client, session.user, { lastSeenAt: "" });
       return json(response, 200, { ok: true });
     }
+
+    const sessionBlock = licenseAccessError(session.user, { allowMustChangePassword: true });
+    if (sessionBlock) return json(response, sessionBlock.status, { message: sessionBlock.message, license: sessionBlock.license || userLicense(session.user) });
+
+    if (route === "/api/session/restore") {
+      return json(response, 200, await pgSessionPayload(client, session.token, session.user));
+    }
+
+    if (route === "/api/auth/change-password") {
+      if (!(await verifyPasswordAsync(body.currentPassword || "", session.user))) {
+        return json(response, 401, { message: "Mật khẩu hiện tại không đúng." });
+      }
+      const newPassword = String(body.newPassword || "");
+      const passwordError = passwordPolicyError(newPassword);
+      if (passwordError) return json(response, 400, { message: passwordError });
+      const passwordBox = await hashPasswordAsync(newPassword);
+      const now = new Date().toISOString();
+      const license = normalizeLicense({ ...(userLicense(session.user) || {}), mustChangePassword: false, updatedAt: now });
+      const updatedUser = applyLicenseToUser({
+        ...session.user,
+        passwordSalt: passwordBox.salt,
+        passwordHash: passwordBox.hash,
+        updatedAt: now
+      }, license);
+      await client.query(
+        `UPDATE users
+         SET password_salt = $2, password_hash = $3, profile = $4::jsonb, updated_at = $5, raw = $6::jsonb
+         WHERE phone = $1`,
+        [updatedUser.phone, updatedUser.passwordSalt, updatedUser.passwordHash, JSON.stringify(updatedUser.profile), now, JSON.stringify(updatedUser)]
+      );
+      return json(response, 200, await pgSessionPayload(client, session.token, updatedUser));
+    }
+
+    const usageBlock = licenseAccessError(session.user);
+    if (usageBlock) return json(response, usageBlock.status, { message: usageBlock.message, license: usageBlock.license || userLicense(session.user) });
 
     if (route === "/api/push/status") {
       return json(response, 200, { push: publicPushConfigStatus() });
@@ -8502,6 +8771,13 @@ async function handleApi(request, response) {
     return json(response, 200, { reports: (db.reports || []).map(reportPayload).slice(0, 200) });
   }
 
+  if (route === "/api/internal/license/sync") {
+    if (!authorizeInternalSync(request, response)) return;
+    const result = jsonSyncGatewayLicense(db, body);
+    if (result.status < 400) await saveDb(db);
+    return json(response, result.status, result.payload || { message: result.message });
+  }
+
   if (route === "/api/auth/otp/request") {
     if (!smtpConfigured()) {
       return json(response, 503, { message: "OTP email đang tạm khóa để bảo mật. Vui lòng liên hệ quản trị viên." });
@@ -8510,6 +8786,9 @@ async function handleApi(request, response) {
     const email = normalizeEmail(body.email);
   const purpose = body.purpose === "forgot" ? "forgot" : "register";
   if (!phone || !validEmail(email)) return json(response, 400, { message: "Số điện thoại hoặc email không hợp lệ." });
+  if (purpose === "register") {
+    return json(response, 403, { message: "XPAY Chat không cho đăng ký trực tiếp. Vui lòng chọn gói dịch vụ và thanh toán tại gatewayxpay.com." });
+  }
   const user = db.users[phone];
   if (purpose === "register") {
     if (user) return json(response, 409, { message: "Số điện thoại này đã đăng ký." });
@@ -8534,6 +8813,7 @@ async function handleApi(request, response) {
   }
 
   if (route === "/api/auth/register") {
+    return json(response, 403, { message: "XPAY Chat không cho đăng ký trực tiếp. Tài khoản chỉ được tạo khi Admin XPAY kích hoạt gói dịch vụ." });
     const phone = normalizePhone(body.phone);
     const password = String(body.password || "");
     const name = String(body.name || "").trim();
@@ -8581,6 +8861,8 @@ async function handleApi(request, response) {
       recordLoginFailure(request, phone);
       return json(response, 401, { message: "Số điện thoại hoặc mật khẩu không đúng." });
     }
+    const loginBlock = licenseAccessError(user, { allowMustChangePassword: true });
+    if (loginBlock) return json(response, loginBlock.status, { message: loginBlock.message, license: loginBlock.license || userLicense(user) });
     clearLoginFailure(request, phone);
     cleanupExpiredSessions(db);
     const token = createSession(db, phone);
@@ -8614,6 +8896,9 @@ async function handleApi(request, response) {
     user.passwordSalt = passwordBox.salt;
     user.passwordHash = passwordBox.hash;
     user.profile = accountEmail ? normalizeProfile(user.profile, phone) : normalizeProfile({ ...user.profile, email }, phone);
+    if (userLicense(user)) {
+      Object.assign(user, applyLicenseToUser(user, normalizeLicense({ ...userLicense(user), mustChangePassword: false, updatedAt: new Date().toISOString() })));
+    }
     user.updatedAt = new Date().toISOString();
     await saveDb(db);
     return json(response, 200, { ok: true, emailBound: !accountEmail });
@@ -8621,12 +8906,6 @@ async function handleApi(request, response) {
 
   const session = await requireUser(request, db);
   if (!session) return json(response, 401, { message: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại." });
-
-  if (route === "/api/session/restore") {
-    touchPresenceUser(session.user);
-    await saveDb(db);
-    return json(response, 200, sessionPayload(db, session.token, session.user));
-  }
 
   if (route === "/api/session/logout") {
     disableJsonPushToken(db, session.phone, body.token || "", body.deviceId || "");
@@ -8637,6 +8916,38 @@ async function handleApi(request, response) {
     await saveDb(db);
     return json(response, 200, { ok: true });
   }
+
+  const sessionBlock = licenseAccessError(session.user, { allowMustChangePassword: true });
+  if (sessionBlock) return json(response, sessionBlock.status, { message: sessionBlock.message, license: sessionBlock.license || userLicense(session.user) });
+
+  if (route === "/api/session/restore") {
+    touchPresenceUser(session.user);
+    await saveDb(db);
+    return json(response, 200, sessionPayload(db, session.token, session.user));
+  }
+
+  if (route === "/api/auth/change-password") {
+    if (!verifyPassword(body.currentPassword || "", session.user)) {
+      return json(response, 401, { message: "Mật khẩu hiện tại không đúng." });
+    }
+    const newPassword = String(body.newPassword || "");
+    const passwordError = passwordPolicyError(newPassword);
+    if (passwordError) return json(response, 400, { message: passwordError });
+    const passwordBox = hashPassword(newPassword);
+    const now = new Date().toISOString();
+    const license = normalizeLicense({ ...(userLicense(session.user) || {}), mustChangePassword: false, updatedAt: now });
+    Object.assign(session.user, applyLicenseToUser({
+      ...session.user,
+      passwordSalt: passwordBox.salt,
+      passwordHash: passwordBox.hash,
+      updatedAt: now
+    }, license));
+    await saveDb(db);
+    return json(response, 200, sessionPayload(db, session.token, session.user));
+  }
+
+  const usageBlock = licenseAccessError(session.user);
+  if (usageBlock) return json(response, usageBlock.status, { message: usageBlock.message, license: usageBlock.license || userLicense(session.user) });
 
   if (route === "/api/push/status") {
     return json(response, 200, { push: publicPushConfigStatus() });

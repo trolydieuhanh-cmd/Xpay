@@ -76,7 +76,7 @@ function renderCustomers(state) {
       <td><strong>${escapeHtml(customer.name)}</strong><br><small>${escapeHtml(customer.id)}</small></td>
       <td>${escapeHtml(customer.email)}<br><small>${escapeHtml(customer.phone)}</small></td>
       <td>${escapeHtml(customer.productName)}<br><small>${escapeHtml(customer.planName)}</small></td>
-      <td>${statusPill(customer.licenseStatus)}<br><small>Hết hạn: ${dateLabel(customer.expiresAt)}</small></td>
+      <td>${statusPill(customer.license?.status || customer.licenseStatus)}<br><small>Hết hạn: ${dateLabel(customer.license?.expiresAt || customer.expiresAt)}</small></td>
       <td>${customer.lastSeenAt ? dateLabel(customer.lastSeenAt) : "Chưa online"}</td>
       <td>
         <div class="row-actions">

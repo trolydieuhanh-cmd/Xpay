@@ -266,6 +266,13 @@ const closeAccountDeleteBtn = document.querySelector("#closeAccountDeleteBtn");
 const accountDeletePasswordInput = document.querySelector("#accountDeletePasswordInput");
 const accountDeleteConfirmInput = document.querySelector("#accountDeleteConfirmInput");
 const accountDeleteStatus = document.querySelector("#accountDeleteStatus");
+const forcePasswordOverlay = document.querySelector("#forcePasswordOverlay");
+const forcePasswordForm = document.querySelector("#forcePasswordForm");
+const forceCurrentPasswordInput = document.querySelector("#forceCurrentPasswordInput");
+const forceNewPasswordInput = document.querySelector("#forceNewPasswordInput");
+const forceConfirmPasswordInput = document.querySelector("#forceConfirmPasswordInput");
+const forcePasswordStatus = document.querySelector("#forcePasswordStatus");
+const forcePasswordLogoutBtn = document.querySelector("#forcePasswordLogoutBtn");
 const activeName = document.querySelector("#activeName");
 const activeMeta = document.querySelector("#activeMeta");
 const activeAvatar = document.querySelector("#activeAvatar");
@@ -376,11 +383,9 @@ let suppressNextChatClick = false;
 const translations = {
   vi: {
     loginTitle: "Đăng nhập",
-    registerTitle: "Đăng ký tài khoản",
     forgotTitle: "Quên mật khẩu",
     authSecureAccount: "Tài khoản bảo mật",
     loginTab: "Đăng nhập",
-    registerTab: "Đăng ký",
     forgotTab: "Quên mật khẩu",
     phone: "Số điện thoại",
     phonePlaceholder: "Ví dụ: 090 123 4567",
@@ -395,12 +400,10 @@ const translations = {
     otpCode: "Mã OTP",
     otpPlaceholder: "Nhập 6 số OTP",
     loginSubmit: "Đăng nhập",
-    registerSubmit: "Gửi mã OTP",
     forgotSubmit: "Gửi OTP khôi phục",
     resendOtp: "Gửi lại mã",
-    authLoginStatus: "Đăng nhập bằng số điện thoại và mật khẩu đã đăng ký.",
-    authRegisterStatus: "Mỗi số điện thoại chỉ đăng ký một tài khoản. Cần xác thực OTP trước khi hoàn tất.",
-    authForgotStatus: "Nhập số điện thoại, email nhận OTP và mật khẩu mới. Nếu tài khoản cũ chưa có email, email này sẽ được gắn cố định sau khi OTP đúng.",
+    authLoginStatus: "Đăng nhập bằng số điện thoại và mật khẩu được Admin XPAY cấp sau khi kích hoạt gói dịch vụ.",
+    authForgotStatus: "Nhập số điện thoại, email nhận OTP và mật khẩu mới để lấy lại quyền đăng nhập XPAY Chat.",
     otpEmailNotice: "OTP email sẽ được gửi duy nhất từ Email: admin@gatewayxpay.com",
     privacyPolicy: "Chính sách quyền riêng tư",
     heroLead: "Trò chuyện, gọi video, nhật ký và kết nối quanh đây trong một trải nghiệm số được thiết kế cho thời đại AI.",
@@ -703,8 +706,8 @@ function normalizeReferral(referral = {}, user = {}) {
     ? referral.installGuide
     : [
         "1. Mở XPAY Chat bằng trình duyệt hoặc ứng dụng chính thức.",
-        "2. Đăng ký tài khoản bằng số điện thoại, email và OTP.",
-        "3. Sau khi xác minh, người được mời có thể kết bạn và dùng các tính năng xã hội."
+        "2. Chọn gói dịch vụ tại gatewayxpay.com và thanh toán QR.",
+        "3. Sau khi Admin XPAY kích hoạt, dùng số điện thoại và mật khẩu được cấp để đăng nhập."
       ];
   return {
     points: Math.max(0, Number(referral.points ?? user.referralPoints ?? 0) || 0),
@@ -789,6 +792,7 @@ async function apiRequest(path, body = {}, options = {}) {
   if (!response.ok) {
     const error = new Error(data.message || "Không thể kết nối máy chủ.");
     error.status = response.status;
+    error.payload = data;
     throw error;
   }
   if (!contentType.includes("application/json")) {
@@ -1403,7 +1407,6 @@ function applyStaticLanguage() {
 
   setText(".login-card > div .eyebrow", "authSecureAccount");
   setText('[data-auth-mode="login"]', "loginTab");
-  setText('[data-auth-mode="register"]', "registerTab");
   setText('[data-auth-mode="forgot"]', "forgotTab");
   setText("#resendOtpBtn", "resendOtp");
   setText("#otpEmailNoticeText", "otpEmailNotice");
@@ -1642,6 +1645,38 @@ function passwordError(password) {
   return "";
 }
 
+function normalizeLicenseInfo(license = null) {
+  if (!license || typeof license !== "object") return null;
+  const lifetime = Boolean(license.lifetime);
+  const expiresAt = lifetime ? "" : String(license.expiresAt || "");
+  let status = String(license.status || "pending").toLowerCase();
+  if (status === "active" && expiresAt && new Date(expiresAt).getTime() < Date.now()) status = "expired";
+  return {
+    customerId: String(license.customerId || ""),
+    productName: String(license.productName || "XPAY Chat"),
+    planName: String(license.planName || ""),
+    status,
+    startsAt: String(license.startsAt || ""),
+    expiresAt,
+    lifetime,
+    mustChangePassword: Boolean(license.mustChangePassword),
+    daysRemaining: lifetime || !expiresAt
+      ? null
+      : Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400000))
+  };
+}
+
+function licenseStatusText(license = null) {
+  const info = normalizeLicenseInfo(license);
+  if (!info) return "Chưa có gói dịch vụ";
+  if (info.status === "active") {
+    if (info.lifetime) return `${info.planName || "Gói dịch vụ"} • Vĩnh viễn`;
+    const expiry = info.expiresAt ? new Date(info.expiresAt).toLocaleDateString("vi-VN") : "";
+    return `${info.planName || "Gói dịch vụ"} • Hết hạn ${expiry}`;
+  }
+  return `Gói ${info.planName || "dịch vụ"} • ${info.status}`;
+}
+
 function initials(name) {
   return name.trim().slice(0, 1).toUpperCase() || "N";
 }
@@ -1684,6 +1719,7 @@ function normalizeUser(user = {}) {
     phoneVerified: Boolean(user.phoneVerified),
     verifiedAt: user.verifiedAt || "",
     accountBadges: normalizeAccountBadges(user.accountBadges),
+    license: normalizeLicenseInfo(user.license),
     roles: Array.isArray(user.roles) ? user.roles.map((role) => String(role).toLowerCase()).filter(Boolean) : [],
     isAppAdmin: Boolean(user.isAppAdmin),
     presenceMode: normalizePresenceMode(user.presenceMode || appSettings.presenceMode),
@@ -2021,6 +2057,24 @@ function applyServerBusinessInbox(items = []) {
   })).filter((item) => item.phone) : [];
 }
 
+function requiresFirstPasswordChange(user = currentUser) {
+  return Boolean(normalizeLicenseInfo(user?.license)?.mustChangePassword);
+}
+
+function openForcePasswordModal(message = "") {
+  if (!forcePasswordOverlay) return;
+  forceCurrentPasswordInput.value = "";
+  forceNewPasswordInput.value = "";
+  forceConfirmPasswordInput.value = "";
+  forcePasswordStatus.textContent = message || "Mật khẩu mới cần có chữ hoa, số và ký tự đặc biệt.";
+  forcePasswordOverlay.classList.remove("hidden");
+  window.setTimeout(() => forceCurrentPasswordInput?.focus(), 80);
+}
+
+function closeForcePasswordModal() {
+  forcePasswordOverlay?.classList.add("hidden");
+}
+
 function applyServerSession(session) {
   if (!session?.user) {
     throw new Error("Không nhận được dữ liệu tài khoản hợp lệ.");
@@ -2036,7 +2090,13 @@ function applyServerSession(session) {
   if (Array.isArray(session.businessInbox)) applyServerBusinessInbox(session.businessInbox);
   if (session.ai) applyAiServerState(session.ai);
   showApp(session.user);
-  startServerSync();
+  if (requiresFirstPasswordChange(session.user)) {
+    stopServerSync();
+    openForcePasswordModal("Vui lòng đổi mật khẩu lần đầu để mở đầy đủ tính năng XPAY Chat.");
+  } else {
+    closeForcePasswordModal();
+    startServerSync();
+  }
 }
 
 function applyServerConversations(conversations = [], options = {}) {
@@ -2205,9 +2265,15 @@ async function syncServerData() {
     serverSyncPrimed = true;
     renderAll();
   } catch (error) {
-    if (error.status === 401) {
+    if (error.status === 428) {
+      if (error.payload?.license && currentUser) saveUser({ ...currentUser, license: error.payload.license });
+      stopServerSync();
+      openForcePasswordModal(error.message || "Vui lòng đổi mật khẩu lần đầu.");
+    } else if (error.status === 401 || error.status === 403) {
       safeRemoveItem(authTokenKey);
       stopServerSync();
+      showAuth();
+      authStatus.textContent = error.message || "Phiên đăng nhập không còn hợp lệ.";
     }
   } finally {
     serverSyncInFlight = false;
@@ -2333,7 +2399,7 @@ function saveUser(user) {
 function renderUserProfile() {
   if (!currentUser) return;
   myName.innerHTML = `${escapeHtml(currentUser.fullName || currentUser.name)}${accountBadgeMarkup(currentUser)}`;
-  myPhone.textContent = `${currentUser.phone} • ${presenceStatusText(currentUser)}`;
+  myPhone.textContent = `${currentUser.phone} • ${licenseStatusText(currentUser.license)} • ${presenceStatusText(currentUser)}`;
   paintAvatar(myAvatar, currentUser);
   const appAdminEnabled = isAppAdminAccount(currentUser);
   appAdminBtn?.classList.toggle("hidden", !appAdminEnabled);
@@ -2359,6 +2425,7 @@ function showApp(user) {
 function showAuth() {
   currentUser = null;
   stopServerSync();
+  closeForcePasswordModal();
   authScreen.classList.remove("hidden");
   chatApp.classList.add("hidden");
 }
@@ -4810,7 +4877,7 @@ function resetOtpFlow() {
   otpInput.value = "";
   otpPanel.classList.add("hidden");
   resendOtpBtn.classList.add("hidden");
-  authSubmitBtn.textContent = authMode === "login" ? "Đăng nhập" : authMode === "register" ? "Gửi mã OTP" : "Gửi OTP khôi phục";
+  authSubmitBtn.textContent = authMode === "forgot" ? "Gửi OTP khôi phục" : "Đăng nhập";
   otpLocalCode.textContent = "";
 }
 
@@ -4865,6 +4932,7 @@ function verifyOtp(phone, code, purpose) {
 }
 
 function setAuthMode(mode) {
+  if (!["login", "forgot"].includes(mode)) mode = "login";
   authMode = mode;
   document.body.dataset.authMode = mode;
   resetOtpFlow();
@@ -4872,22 +4940,19 @@ function setAuthMode(mode) {
     tab.classList.toggle("active", tab.dataset.authMode === mode);
   });
 
-  const isRegister = mode === "register";
   const isForgot = mode === "forgot";
-  authTitle.textContent = isRegister ? t("registerTitle") : isForgot ? t("forgotTitle") : t("loginTitle");
-  emailField.classList.toggle("hidden", !isRegister && !isForgot);
-  nameField.classList.toggle("hidden", !isRegister);
+  authTitle.textContent = isForgot ? t("forgotTitle") : t("loginTitle");
+  emailField.classList.toggle("hidden", !isForgot);
+  nameField.classList.add("hidden");
   passwordField.classList.toggle("hidden", false);
-  confirmPasswordField.classList.toggle("hidden", !isRegister && !isForgot);
+  confirmPasswordField.classList.toggle("hidden", !isForgot);
   passwordLabel.textContent = isForgot ? t("newPassword") : t("password");
-  nameInput.required = isRegister;
-  emailInput.required = isRegister || isForgot;
+  nameInput.required = false;
+  emailInput.required = isForgot;
   passwordInput.required = true;
-  confirmPasswordInput.required = isRegister || isForgot;
-  authSubmitBtn.textContent = isRegister ? t("registerSubmit") : isForgot ? t("forgotSubmit") : t("loginSubmit");
-  authStatus.textContent = isRegister
-    ? t("authRegisterStatus")
-    : isForgot
+  confirmPasswordInput.required = isForgot;
+  authSubmitBtn.textContent = isForgot ? t("forgotSubmit") : t("loginSubmit");
+  authStatus.textContent = isForgot
       ? t("authForgotStatus")
       : t("authLoginStatus");
 }
@@ -6586,7 +6651,7 @@ loginForm.addEventListener("submit", async (event) => {
 
     const account = users[cleanPhone];
     if (!account) {
-      authStatus.textContent = "Số điện thoại này chưa đăng ký. Vui lòng chuyển sang Đăng ký.";
+      authStatus.textContent = "Số điện thoại này chưa được Admin XPAY cấp tài khoản. Vui lòng chọn gói dịch vụ trên gatewayxpay.com.";
       return;
     }
     if (account.password !== password) {
@@ -6605,50 +6670,6 @@ loginForm.addEventListener("submit", async (event) => {
   }
   if (password !== confirmPassword) {
     authStatus.textContent = "Mật khẩu nhập lại chưa khớp.";
-    return;
-  }
-
-  if (authMode === "register") {
-    if (!name) return;
-    if (!validEmail(email)) {
-      authStatus.textContent = "Vui lòng nhập email hợp lệ để nhận OTP.";
-      return;
-    }
-    if (users[cleanPhone]) {
-      authStatus.textContent = "Số điện thoại này đã đăng ký. Vui lòng đăng nhập hoặc dùng Quên mật khẩu.";
-      return;
-    }
-    if (!pendingOtp || cleanPhone !== pendingOtpPhone || pendingOtpEmail !== email || pendingOtpPurpose !== "register") {
-      await startOtpFlow(phone, "register", email);
-      return;
-    }
-    if (!verifyOtp(phone, otpInput.value, "register")) {
-      authStatus.textContent = "Mã OTP không đúng hoặc đã hết hạn. Vui lòng kiểm tra lại.";
-      return;
-    }
-
-    authStatus.textContent = "Đang tạo tài khoản...";
-    const user = { phone, email, name, fullName: name, phoneVerified: true, verifiedAt: new Date().toISOString() };
-    try {
-      await apiRequest("/api/auth/register", { phone, email, name, password, otp: otpInput.value }, { auth: false });
-    } catch (error) {
-      if (!error.network) {
-        authStatus.textContent = error.message || "Không tạo được tài khoản.";
-        return;
-      }
-      if (isServerRuntime()) {
-        authStatus.textContent = "Không kết nối được, chưa thể tạo tài khoản.";
-        return;
-      }
-      users[cleanPhone] = { user: normalizeUser(user), password, createdAt: new Date().toISOString() };
-      saveUsers(users);
-    }
-    resetOtpFlow();
-    passwordInput.value = "";
-    confirmPasswordInput.value = "";
-    setAuthMode("login");
-    phoneInput.value = phone;
-    authStatus.textContent = "Đăng ký thành công. Vui lòng đăng nhập bằng mật khẩu vừa tạo.";
     return;
   }
 
@@ -6702,7 +6723,7 @@ resendOtpBtn.addEventListener("click", async () => {
     authStatus.textContent = "Vui lòng nhập số điện thoại trước khi gửi OTP.";
     return;
   }
-  await startOtpFlow(phone, authMode === "forgot" ? "forgot" : "register", email);
+  if (authMode === "forgot") await startOtpFlow(phone, "forgot", email);
 });
 
 document.querySelectorAll(".auth-tab").forEach((tab) => {
@@ -6924,6 +6945,43 @@ accountDeleteForm?.addEventListener("submit", async (event) => {
   } catch (error) {
     accountDeleteStatus.textContent = error.message || "Không xoá được tài khoản.";
   }
+});
+
+forcePasswordForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const currentPassword = forceCurrentPasswordInput.value;
+  const newPassword = forceNewPasswordInput.value;
+  const confirmPassword = forceConfirmPasswordInput.value;
+  const policyError = passwordError(newPassword);
+  if (policyError) {
+    forcePasswordStatus.textContent = policyError;
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    forcePasswordStatus.textContent = "Mật khẩu mới nhập lại chưa khớp.";
+    return;
+  }
+  forcePasswordStatus.textContent = "Đang đổi mật khẩu...";
+  try {
+    const session = await apiRequest("/api/auth/change-password", { currentPassword, newPassword });
+    forcePasswordStatus.textContent = "Đã đổi mật khẩu.";
+    applyServerSession(session);
+  } catch (error) {
+    forcePasswordStatus.textContent = error.message || "Không đổi được mật khẩu.";
+  }
+});
+
+forcePasswordLogoutBtn?.addEventListener("click", async () => {
+  if (hasServerSession()) {
+    await apiRequest("/api/session/logout", { deviceId: pushDeviceId() }).catch(() => undefined);
+  }
+  safeRemoveItem(storageKey);
+  safeRemoveItem(authTokenKey);
+  clearLargeLocalCache();
+  stopServerSync();
+  setAuthMode("login");
+  showAuth();
+  authStatus.textContent = "Đã đăng xuất. Vui lòng đăng nhập lại khi cần sử dụng XPAY Chat.";
 });
 
 presenceOnlineSetting?.addEventListener("change", () => {
@@ -8029,8 +8087,9 @@ async function bootApp() {
       const session = await apiRequest("/api/session/restore");
       applyServerSession(session);
       return;
-    } catch {
+    } catch (error) {
       safeRemoveItem(authTokenKey);
+      if (error?.message) authStatus.textContent = error.message;
     }
   }
 

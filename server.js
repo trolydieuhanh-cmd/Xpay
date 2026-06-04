@@ -26,6 +26,7 @@ loadEnv(path.join(ROOT, ".env"));
 const PORT = Number(process.env.PORT || 4187);
 const HOST = process.env.HOST || "127.0.0.1";
 const XPAY_CHAT_UPSTREAM = (process.env.XPAY_CHAT_UPSTREAM || "http://127.0.0.1:4182").replace(/\/+$/, "");
+const XPAY_CHAT_SYNC_TOKEN = process.env.XPAY_CHAT_SYNC_TOKEN || "";
 const listeners = new Set();
 
 ensureStateFile();
@@ -228,6 +229,53 @@ function proxyToXpayChat(req, res, prefix, url) {
   req.pipe(proxyReq);
 }
 
+function xpayChatApiRequest(pathname, body) {
+  return new Promise((resolve, reject) => {
+    if (!XPAY_CHAT_SYNC_TOKEN) {
+      reject(new Error("Chưa cấu hình XPAY_CHAT_SYNC_TOKEN để đồng bộ XPAY Chat."));
+      return;
+    }
+
+    const upstream = new URL(XPAY_CHAT_UPSTREAM);
+    const payload = JSON.stringify(body || {});
+    const req = http.request({
+      protocol: upstream.protocol,
+      hostname: upstream.hostname,
+      port: upstream.port || (upstream.protocol === "https:" ? 443 : 80),
+      method: "POST",
+      path: pathname,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(payload),
+        Authorization: `Bearer ${XPAY_CHAT_SYNC_TOKEN}`
+      }
+    }, (apiRes) => {
+      let responseBody = "";
+      apiRes.setEncoding("utf8");
+      apiRes.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+      apiRes.on("end", () => {
+        let data = {};
+        try {
+          data = responseBody ? JSON.parse(responseBody) : {};
+        } catch {
+          data = { message: responseBody };
+        }
+        if ((apiRes.statusCode || 500) >= 400) {
+          reject(new Error(data.message || data.error || `XPAY Chat sync failed with HTTP ${apiRes.statusCode}`));
+          return;
+        }
+        resolve(data);
+      });
+    });
+
+    req.on("error", reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
 function parseCookies(req) {
   const cookie = req.headers.cookie || "";
   return cookie.split(";").reduce((acc, item) => {
@@ -296,7 +344,10 @@ function onlineCustomers(state) {
 
 function customerView(customer) {
   const { passwordHash, ...safe } = customer;
-  return safe;
+  return {
+    ...safe,
+    license: customerLicense(customer)
+  };
 }
 
 function adminView(state) {
@@ -317,8 +368,8 @@ function adminView(state) {
     stats: {
       pendingOrders: state.orders.filter((order) => order.status === "pending").length,
       paidOrders: state.orders.filter((order) => order.status === "paid").length,
-      activeCustomers: state.customers.filter((customer) => customer.licenseStatus === "active").length,
-      suspendedCustomers: state.customers.filter((customer) => customer.licenseStatus === "suspended").length,
+      activeCustomers: state.customers.filter((customer) => customerLicense(customer).status === "active").length,
+      suspendedCustomers: state.customers.filter((customer) => customerLicense(customer).status === "suspended").length,
       onlineCustomers: onlineCustomers(state).length,
       revenueConfirmed: state.orders.filter((order) => ["paid", "activated"].includes(order.status)).reduce((sum, order) => sum + Number(order.amount || 0), 0)
     }
@@ -347,6 +398,9 @@ async function sendActivationEmail(customer, plan, password) {
 }
 
 async function sendMail(message) {
+  if (String(process.env.MAIL_DELIVERY || "").toLowerCase() === "outbox") {
+    return writeOutboxMail(message, "outbox");
+  }
   const smtpHost = process.env.SMTP_HOST;
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
@@ -462,6 +516,35 @@ function ensureCustomerFromOrder(state, order) {
   return customer;
 }
 
+function customerSyncPayload(customer, action) {
+  return {
+    action,
+    customer: {
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      productId: customer.productId,
+      productName: customer.productName,
+      planId: customer.planId,
+      planName: customer.planName,
+      licenseStatus: customer.licenseStatus,
+      startsAt: customer.startsAt,
+      expiresAt: customer.expiresAt,
+      lifetime: Boolean(customer.lifetime),
+      mustChangePassword: Boolean(customer.mustChangePassword),
+      updatedAt: customer.updatedAt
+    }
+  };
+}
+
+async function syncCustomerToXpayChat(customer, action, password = "") {
+  if (customer.productId !== "xpay-chat") return { skipped: true, reason: "product-not-xpay-chat" };
+  const payload = customerSyncPayload(customer, action);
+  if (password) payload.password = password;
+  return xpayChatApiRequest("/api/internal/license/sync", payload);
+}
+
 async function activateOrder(state, order, actor) {
   const plan = state.plans.find((item) => item.id === order.planId);
   if (!plan) throw new Error("Không tìm thấy gói dịch vụ.");
@@ -483,6 +566,7 @@ async function activateOrder(state, order, actor) {
   customer.passwordHash = hashPassword(firstPassword);
   customer.updatedAt = nowIso();
   if (!customer.activatedOrderIds.includes(order.id)) customer.activatedOrderIds.push(order.id);
+  const chatSync = await syncCustomerToXpayChat(customer, "activate", firstPassword);
   order.status = "activated";
   order.activatedAt = nowIso();
   order.updatedAt = nowIso();
@@ -491,9 +575,10 @@ async function activateOrder(state, order, actor) {
     orderId: order.id,
     customerId: customer.id,
     deliveryMode: delivery.mode,
-    delivered: delivery.delivered
+    delivered: delivery.delivered,
+    chatSynced: !chatSync.skipped
   });
-  return { customer, delivery };
+  return { customer, delivery, chatSync };
 }
 
 function customerLicense(customer) {
@@ -748,6 +833,7 @@ async function handleApi(req, res, url) {
           customer.licenseStatus = "active";
         }
         customer.updatedAt = nowIso();
+        await syncCustomerToXpayChat(customer, action);
         audit(state, "admin", `customer.${action}`, { customerId: customer.id });
         writeState(state);
         emit(`customer.${action}`, { customerId: customer.id });
