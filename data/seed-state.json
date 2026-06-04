@@ -50,31 +50,47 @@
       "id": "p30",
       "name": "30 ngày",
       "durationDays": 30,
-      "price": 390000,
-      "highlight": "Khởi động nhanh",
-      "features": ["Kích hoạt 1 tài khoản", "Hỗ trợ email", "Gia hạn tự động qua admin"]
+      "price": 50000,
+      "highlight": "Gói trải nghiệm",
+      "features": ["Kích hoạt 1 tài khoản", "Sử dụng đủ tính năng cơ bản", "Gia hạn tự động qua admin"]
     },
     {
       "id": "p60",
       "name": "60 ngày",
       "durationDays": 60,
-      "price": 690000,
-      "highlight": "Tiết kiệm hơn",
-      "features": ["Kích hoạt 1 tài khoản", "Ưu tiên xử lý giao dịch", "Báo trước ngày hết hạn"]
+      "price": 100000,
+      "highlight": "Gói khởi động",
+      "features": ["Kích hoạt 1 tài khoản", "Theo dõi thời hạn sử dụng", "Báo trước ngày hết hạn"]
     },
     {
       "id": "p90",
       "name": "90 ngày",
       "durationDays": 90,
-      "price": 990000,
-      "highlight": "Dành cho đội vận hành",
+      "price": 200000,
+      "highlight": "Gói tiêu chuẩn",
       "features": ["Kích hoạt 1 tài khoản", "Theo dõi online", "Hỗ trợ quy trình triển khai"]
+    },
+    {
+      "id": "p180",
+      "name": "180 ngày",
+      "durationDays": 180,
+      "price": 500000,
+      "highlight": "Gói bán niên",
+      "features": ["Kích hoạt 1 tài khoản", "Ưu tiên xử lý giao dịch", "Gia hạn linh hoạt"]
+    },
+    {
+      "id": "p365",
+      "name": "365 ngày",
+      "durationDays": 365,
+      "price": 1000000,
+      "highlight": "Gói năm",
+      "features": ["Kích hoạt 1 tài khoản", "Theo dõi vận hành dài hạn", "Ưu tiên hỗ trợ"]
     },
     {
       "id": "lifetime",
       "name": "Vĩnh viễn",
       "durationDays": null,
-      "price": 5900000,
+      "price": 2000000,
       "highlight": "Sở hữu dài hạn",
       "features": ["Không giới hạn thời hạn", "Ưu tiên nâng cấp", "Hồ sơ license riêng"]
     }
