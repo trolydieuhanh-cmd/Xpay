@@ -24,6 +24,7 @@ loadEnv(path.join(ROOT, ".env.local"));
 loadEnv(path.join(ROOT, ".env"));
 
 const PORT = Number(process.env.PORT || 4187);
+const HOST = process.env.HOST || "127.0.0.1";
 const listeners = new Set();
 
 ensureStateFile();
@@ -742,6 +743,6 @@ const server = http.createServer((req, res) => {
   serveStatic(req, res, url);
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Gateway XPAY running at http://127.0.0.1:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`Gateway XPAY running at http://${HOST}:${PORT}`);
 });
