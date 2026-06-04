@@ -20,7 +20,7 @@ Open `http://127.0.0.1:4187`.
 
 ## Email
 
-Copy `.env.example` to `.env.local`, keep `.env.local` private, and set the SMTP app password there. The server sends first-login passwords from `admin@gatewayxpay.com`; if SMTP is missing, messages are written to `data/outbox/` for local testing only.
+Copy `.env.example` to `.env.local`, keep `.env.local` private, and set the Hostinger mailbox password there. The server sends first-login passwords from `admin@gatewayxpay.com` through `smtp.hostinger.com`; if SMTP is missing, messages are written to `data/outbox/` for local testing only.
 
 ## Payment Account
 
