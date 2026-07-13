@@ -1,0 +1,59 @@
+name: aaip-ci
+
+on:
+  pull_request:
+    paths:
+      - "asean-ai-platform-mgmt/**"
+      - ".github/workflows/aaip-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "asean-ai-platform-mgmt/**"
+      - ".github/workflows/aaip-ci.yml"
+
+jobs:
+  backend:
+    name: Backend (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: asean-ai-platform-mgmt/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: asean-ai-platform-mgmt/backend/requirements.txt
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+      - name: Ruff lint
+        run: ruff check app
+      - name: Import smoke test
+        env:
+          ANTHROPIC_API_KEY: dummy-key-for-import
+        run: |
+          python -c "from app.main import app; print('FastAPI app loaded:', app.title)"
+
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: asean-ai-platform-mgmt/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: asean-ai-platform-mgmt/frontend/package.json
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint --if-present
