@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: aaip-backend
+    restart: unless-stopped
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY missing — sao chép .env.example}
+      - ANTHROPIC_MODEL_MAIN=${ANTHROPIC_MODEL_MAIN:-claude-opus-4-8}
+      - ANTHROPIC_MODEL_FAST=${ANTHROPIC_MODEL_FAST:-claude-haiku-4-5-20251001}
+      - DATABASE_URL=sqlite+aiosqlite:///./data/app.db
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+    volumes:
+      - ./data:/app/data
+      - ./backend/app/knowledge:/app/app/knowledge
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: aaip-frontend
+    restart: unless-stopped
+    environment:
+      - BACKEND_URL=http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

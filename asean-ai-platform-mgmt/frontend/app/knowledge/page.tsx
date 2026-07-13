@@ -31,6 +31,40 @@ export default function KnowledgePage() {
     null
   );
   const [reloading, setReloading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+
+  async function upload(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fileInput = form.elements.namedItem("file") as HTMLInputElement;
+    const subdirInput = form.elements.namedItem("subdir") as HTMLInputElement;
+    if (!fileInput.files?.length) return;
+
+    const fd = new FormData();
+    fd.append("file", fileInput.files[0]);
+    if (subdirInput.value.trim()) fd.append("subdir", subdirInput.value.trim());
+
+    setUploading(true);
+    setUploadMsg(null);
+    try {
+      const res = await fetch("/api/knowledge/upload", {
+        method: "POST",
+        body: fd,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setUploadMsg(
+        `✓ Đã upload "${data.source}" (${data.bytes} bytes). Tổng ${data.total_chunks} chunk.`
+      );
+      form.reset();
+      mutate();
+    } catch (e: any) {
+      setUploadMsg("✗ Lỗi: " + (e.message || String(e)));
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function search(e: React.FormEvent) {
     e.preventDefault();
@@ -79,6 +113,48 @@ export default function KnowledgePage() {
           {reloading ? "Đang tải lại…" : "Tải lại KB"}
         </button>
       </div>
+
+      <form
+        onSubmit={upload}
+        className="mb-6 p-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+      >
+        <div className="text-sm font-semibold mb-2">Thêm tài liệu vào KB</div>
+        <div className="flex flex-wrap gap-2 items-center">
+          <input
+            type="file"
+            name="file"
+            accept=".md,.txt"
+            required
+            className="text-sm"
+          />
+          <input
+            name="subdir"
+            placeholder="Thư mục con (tùy chọn)"
+            className="text-sm border rounded px-2 py-1 dark:bg-slate-950 dark:border-slate-700"
+          />
+          <button
+            type="submit"
+            disabled={uploading}
+            className="px-3 py-1.5 text-sm rounded bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
+          >
+            {uploading ? "Đang upload…" : "Upload"}
+          </button>
+          <span className="text-xs text-slate-500">
+            .md hoặc .txt, tối đa 2 MB, UTF-8
+          </span>
+        </div>
+        {uploadMsg && (
+          <div
+            className={`mt-2 text-xs ${
+              uploadMsg.startsWith("✓")
+                ? "text-emerald-700 dark:text-emerald-300"
+                : "text-rose-700 dark:text-rose-300"
+            }`}
+          >
+            {uploadMsg}
+          </div>
+        )}
+      </form>
 
       <form onSubmit={search} className="flex gap-2 mb-6">
         <input

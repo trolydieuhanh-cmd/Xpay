@@ -12,12 +12,14 @@
 ## v0.2 — Sản phẩm dùng nội bộ
 
 - [ ] Authentication (SSO Azure AD hoặc Google)
-- [ ] Streaming chat trong UI (backend đã có endpoint)
-- [ ] Feedback 👍/👎 trong UI, lưu vào DB
+- [x] Streaming chat trong UI (SSE, hiển thị token dần)
+- [x] Feedback 👍/👎 trong UI, lưu vào bảng `feedback`
 - [ ] Export báo cáo tuần ra PDF/DOCX
 - [ ] Multi-user với phân quyền cơ bản
-- [ ] Upload file để bổ sung KB qua UI (không cần chỉnh git)
-- [ ] Docker Compose để 1 lệnh chạy
+- [x] Upload file để bổ sung KB qua UI (`.md`/`.txt`, tự reload)
+- [x] Docker Compose để `docker compose up` chạy cả 2 tầng
+- [x] GitHub Actions CI: ruff + Python import smoke + Next typecheck
+- [x] Eval framework skeleton (`backend/eval/`) với LLM-as-judge
 
 ## v0.3 — Bổ sung năng lực AI
 

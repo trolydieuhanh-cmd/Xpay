@@ -46,6 +46,17 @@ Xây dựng một AI Agent chuyên trách quản lý dự án ASEAN AI Platform,
 
 ---
 
+## Chạy nhanh bằng Docker (khuyến nghị cho lần đầu thử)
+
+```bash
+# Ở thư mục gốc dự án
+cp .env.example .env
+# Sửa .env: điền ANTHROPIC_API_KEY
+
+docker compose up --build
+# Mở http://localhost:3000
+```
+
 ## Cài đặt nhanh trên Windows (ổ E:)
 
 Xem chi tiết tại [`docs/SETUP_WINDOWS.md`](./docs/SETUP_WINDOWS.md).

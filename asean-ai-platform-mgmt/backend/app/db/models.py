@@ -18,7 +18,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 
-class ProjectStatus(str, enum.Enum):
+class ProjectStatus(enum.StrEnum):
     PLANNING = "planning"
     IN_PROGRESS = "in_progress"
     ON_HOLD = "on_hold"
@@ -26,7 +26,7 @@ class ProjectStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
-class TaskStatus(str, enum.Enum):
+class TaskStatus(enum.StrEnum):
     TODO = "todo"
     IN_PROGRESS = "in_progress"
     IN_REVIEW = "in_review"
@@ -34,21 +34,21 @@ class TaskStatus(str, enum.Enum):
     BLOCKED = "blocked"
 
 
-class TaskPriority(str, enum.Enum):
+class TaskPriority(enum.StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
 
 
-class RiskLevel(str, enum.Enum):
+class RiskLevel(enum.StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
 
 
-class RiskStatus(str, enum.Enum):
+class RiskStatus(enum.StrEnum):
     IDENTIFIED = "identified"
     MITIGATING = "mitigating"
     RESOLVED = "resolved"
@@ -77,10 +77,10 @@ class Project(Base):
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-    tasks: Mapped[list["Task"]] = relationship(
+    tasks: Mapped[list[Task]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
-    risks: Mapped[list["Risk"]] = relationship(
+    risks: Mapped[list[Risk]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
 
@@ -153,7 +153,7 @@ class Conversation(Base):
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-    messages: Mapped[list["Message"]] = relationship(
+    messages: Mapped[list[Message]] = relationship(
         back_populates="conversation",
         cascade="all, delete-orphan",
         order_by="Message.id",

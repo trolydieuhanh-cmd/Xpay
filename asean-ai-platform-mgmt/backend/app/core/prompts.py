@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from app.core.config import BASE_DIR
 
 PROMPT_DIR = BASE_DIR / "app" / "prompts"

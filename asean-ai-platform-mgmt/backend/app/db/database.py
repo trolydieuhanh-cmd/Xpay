@@ -1,11 +1,9 @@
 from collections.abc import AsyncIterator
-from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import BASE_DIR, get_settings
-
 
 settings = get_settings()
 
